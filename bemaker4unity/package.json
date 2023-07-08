@@ -1,0 +1,25 @@
+{
+  "name": "bemaker",
+  "displayName": "BeMaker",
+  "version": "0.9.0",
+  "unity": "2021.3",
+  "description": "Use state-of-the-art machine learning to create intelligent character behaviors in any Unity environment (games, robotics, film, etc.).",
+  "dependencies": {"com.unity.nuget.newtonsoft-json": "2.0.0"},
+  "samples": [
+    {
+      "displayName": "Assets",
+      "description": "Assets used in AutoPlayer examples.",
+      "path": "Samples/Assets"
+    },
+    {
+      "displayName": "Donut",
+      "description": "BeMaker Demo with scenes used in examples of python scripts.",
+      "path": "Samples/Donut"
+    }
+  ],
+  "author": {
+    "name": "Gilzamir Gomes",
+    "email": "gilzamir@outlook.com",
+    "url": "https://www.github.com/gilzamir18/bemaker"
+  }
+}
