@@ -19,6 +19,4 @@ BAAF (bemaker) was tested in Ubuntu 22.04 and Windows 11. In Ubuntu 22.04, bette
 
 # Setup
 
-BeMakerUnity is a Unity package that can be installed locally. Create a new 3D project in Unity. From the Window menu, select the "Package Manager" option. In the Package Manager window, click on the "add package from disk" option. The following image shows the entire process of installing the package and opening a ready-to-train scene.
-
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/O8rYrfaTSFI/0.jpg)](https://youtu.be/O8rYrfaTSFI)
+BeMakerUnity is a Unity package that can be installed locally. Create a new 3D project in Unity. From the Window menu, select the "Package Manager" option. In the Package Manager window, click on the "add package from disk" option. So, you can use BAAF components in your project.
