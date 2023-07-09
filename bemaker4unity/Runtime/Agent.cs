@@ -15,11 +15,11 @@ namespace bemaker
 
     ///<summary>
     ///An agent is an object that supports the cycle of updating the state 
-    ///represented by the tuple (s[t], a, s[t + 1]), where s [t] is the current 
-    ///state, s [t+1] is the next state and 'a' is the action taken that resulted 
-    ///in s[t+1]. An agent receives an action or command from a controlle (instance of the Brain class),
+    ///represented by the tuple (s[t], a, s[t + 1]), where s[t] is the current 
+    ///state, s[t+1] is the next state and 'a' is the action taken that resulted 
+    ///in s[t+1]. An agent receives an action or command from a controller,
     ///executes this action in the environment and returns to the controller the resulting 
-    ///state named s[t+t1]. </summary>
+    ///state named s[t+1]. </summary>
 
     public abstract class Agent : MonoBehaviour
     {
@@ -56,11 +56,10 @@ namespace bemaker
 
         void OnDisable()
         {
-            if (controlInfo == null)
+            if (CheckConfig())
             {
-                Debug.LogWarning($"Agent {name} was not initialized by a control requestor. \n Fix it: add this agent to a control requestor.");
+                brain.Close();
             }
-            brain.Close();
         }
 
         public byte[] MessageType
@@ -118,11 +117,12 @@ namespace bemaker
         ***/
         public virtual void ApplyAction()
         {
+            //TODO
         }  
 
         public virtual void EndOfEpisode()
         {
-
+            //TODO
         }
 
         public bool SetupIsDone
@@ -295,6 +295,7 @@ namespace bemaker
 
         public virtual void UpdateState()
         {
+            //TODO
         }
 
         public virtual void AgentReset()
@@ -310,6 +311,18 @@ namespace bemaker
         public void SetBrain(Brain brain)
         {
             this.brain = brain;
+        }
+
+        private bool CheckConfig()
+        {
+            bool error = false;
+            if (controlInfo == null)
+            {
+                Debug.LogWarning($"Agent {name} was not initialized by a control requestor. \n Fix it: add this agent to a control requestor.");
+                error = true;
+            }
+            
+            return error;
         }
     }
 
