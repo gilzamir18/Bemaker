@@ -13,7 +13,7 @@ namespace bemaker {
         public float jumpPower = 1;
         public float jumpForwardPower = 1;
         public bool showAgentArrow = true;
-        public Vector3 arrowOffset = new Vector3(0, 0, 0); 
+        public Vector3 arrowOffset = new Vector3(0, 0.5f, 1.7f); 
 
         public bool freezeXPos = false;
         public bool freezeYPos = false;
@@ -155,14 +155,24 @@ namespace bemaker {
             //Define os índices dos triângulos da malha (sentido anti-horário)
             int[] triangles = new int[]
             {
+                //front 
                 1, 0, 2, //ponta da seta
                 3, 1, 4, //parte superior do corpo
                 2, 4, 1, //parte inferior do corpo
                 5, 3, 6, //parte superior da cauda
                 4, 6, 3, //parte inferior da cauda
                 7, 5, 6, //pena esquerda
-                8, 6, 5 //pena direita
+                8, 6, 5, //pena direita
+                //back
+                0, 1, 2, //ponta da seta
+                1, 3, 4, //parte superior do corpo
+                4, 2, 1, //parte inferior do corpo
+                3, 5, 6, //parte superior da cauda
+                6, 4, 3, //parte inferior da cauda
+                5, 7, 6, //pena esquerda
+                6, 8, 5 //pena direita
             };
+
             //Define as normais da malha (apontando para cima)
             Vector3[] normals = new Vector3[vertices.Length];
             for (int i = 0; i < normals.Length; i++)
@@ -172,6 +182,7 @@ namespace bemaker {
             //Define as coordenadas UV da malha (opcional)
             Vector2[] uv = new Vector2[]
             {
+                //front
                 new Vector2(0.5f, 1), //ponta da seta
                 new Vector2(0.25f, 0.75f), //lado esquerdo da ponta
                 new Vector2(0.75f, 0.75f), //lado direito da ponta
