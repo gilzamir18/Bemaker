@@ -29,9 +29,10 @@ namespace bemaker
 
         protected Brain brain;
         public string ID = "0";
-        public ControlRequestor controlRequestor;
         public bool remote = false;
+        public int priority = -1;
         
+        public ControlRequestor ControlRequestor {get; set;}
         protected int numberOfFields = 0;
         protected int nSteps;
         protected string[] desc;
@@ -55,6 +56,10 @@ namespace bemaker
 
         void OnDisable()
         {
+            if (controlInfo == null)
+            {
+                Debug.LogWarning($"Agent {name} was not initialized by a control requestor. \n Fix it: add this agent to a control requestor.");
+            }
             brain.Close();
         }
 
@@ -105,14 +110,6 @@ namespace bemaker
             get
             {
                 return brain;
-            }
-        }
-        
-        public ControlRequestor ControlRequestor
-        {
-            get
-            {
-                return controlRequestor;
             }
         }
 

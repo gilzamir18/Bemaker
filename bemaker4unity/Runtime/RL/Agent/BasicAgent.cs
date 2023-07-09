@@ -45,12 +45,10 @@ namespace bemaker
         private ModelMetadataLoader metadataLoader;
 
 
-        void Awake()
+        public override void SetupAgent()
         {
             if (remote)
-            {
-
-                
+            {   
                 RemoteBrain r = new RemoteBrain();
                 SetBrain(r);
                 var config = GetComponent<RemoteConfiguration>();
@@ -65,7 +63,7 @@ namespace bemaker
                 }
 
                 brain.Setup(this);
-                SetupAgent();
+                BMInitialize();
             }
             else 
             {
@@ -75,7 +73,7 @@ namespace bemaker
                 {
                     SetBrain(new LocalBrain(ctrl));
                     brain.Setup(this);
-                    SetupAgent();
+                    BMInitialize();
                 }
                 else
                 {   
@@ -142,15 +140,15 @@ namespace bemaker
             return rewards.Remove(f);
         }
 
-        public override void SetupAgent()
+        public void BMInitialize()
         {
             if (body == null)
             {
                 body = gameObject;
             }
-            if (controlRequestor == null)
+            if (ControlRequestor == null)
             {
-                throw new System.Exception("ControlRequestor is mandatory to BasicAgent! Set a ControlRequestor component for this agent.");
+                throw new System.Exception("ControlRequestor is mandatory to BasicAgent!");
             }
             setupIsDone = false;
             System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
@@ -281,8 +279,7 @@ namespace bemaker
             desc = new string[totalNumberOfSensors];
             types = new byte[totalNumberOfSensors];
             values = new string[totalNumberOfSensors];
-            controlRequestor.SetAgent(this);
-        
+
             foreach (RewardFunc r in rewards)
             {
                 r.OnSetup(this);
@@ -312,7 +309,7 @@ namespace bemaker
             request.SetMessage(2, "id", bemaker.Brain.STR, ID);
             request.SetMessage(3, "modelmetadata", bemaker.Brain.STR, metadatastr);
 			request.SetMessage(4, "config", bemaker.Brain.INT, 1);
-            var cmds = controlRequestor.RequestEnvControl(this, request);
+            var cmds = ControlRequestor.RequestEnvControl(this, request);
             if (cmds == null)
             {
                 throw new System.Exception("bemaker2unity connection error on agent id: " + ID);

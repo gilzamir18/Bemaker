@@ -17,32 +17,49 @@ namespace bemaker
         }
     }
 
+
+    internal  class AgentComparer : IComparer<Agent>
+    {
+        public int Compare(Agent x, Agent y)
+        {
+            if (x.priority > y.priority)
+            {
+                return -1;
+            } else if (x.priority < y.priority)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
+    }
+
     public class ControlRequestor : MonoBehaviour
     {
         public float defaultTimeScale = 1.0f; 
         public bool physicsMode = true;
         public int skipFrame = 8;
         public bool repeatAction = false;
+        public List<Agent> agents;
 
-        private SortedList<string, Agent> agents;
-
-        private bool initialized = false;
-
-        public void SetAgent(Agent agent)
+        void Awake()
         {
-            if (! initialized)
+            Agent current = GetComponent<Agent>();
+            if (current != null && !agents.Contains(current))
             {
-                Initialize();
-                initialized = true;
+                agents.Add(current);
             }
-            string pkey = agent.ID;
-            this.agents.Add(pkey, agent);
-            agent.ControlInfo = new AgentControlInfo();
-        }
+            agents.Sort(new AgentComparer());
+            for (int i = 0; i < agents.Count; i++)
+            {
+                Agent a = agents[i];
+                a.ControlInfo = new AgentControlInfo();
+                a.ControlRequestor = this;
+                a.SetupAgent();
+            }
 
-        void Initialize()
-        {
-            this.agents = new SortedList<string, Agent>();
             Time.timeScale = defaultTimeScale;
         }
 
@@ -157,13 +174,9 @@ namespace bemaker
 
         void bemakerUpdate()
         {
-            if (!initialized)
+            foreach(var agent in agents)
             {
-                throw new System.Exception("ControlRequestor could not be initialized.");
-            }
-            foreach(var entry in agents)
-            {
-                AgentUpdate(entry.Value);
+                AgentUpdate(agent);
             }
         }
 
