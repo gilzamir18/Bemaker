@@ -127,7 +127,7 @@ namespace bemaker
                 string[] tokens = cmdToken.Trim().Split(';');
                 if (tokens.Length < 2)
                 {
-                    string msg = "Invalid command exception: number of arguments is less then two : " + cmdToken;
+                    string msg = "Invalid command exception: number of arguments is less then two : " + cmd;
                     throw new System.Exception(msg);
                 }
                 
@@ -192,8 +192,7 @@ namespace bemaker
             {
                 if (agent == null)
                 {
-                    Debug.LogWarning("ControlRequest requires an Agent! Use the method 'SetAgent' of the ControlRequest" 
-                                      + " component to set an agent!");
+                    Debug.LogWarning("ControlRequest requires at least one agent!");
                 }
                 if (!ctrl.applyingAction)
                 {

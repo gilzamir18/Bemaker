@@ -13,7 +13,7 @@ class GenericEnvironment(gym.Env):
     # Define action and observation space
     # They must be gym.spaces objects
     # Example when using discrete actions:
-
+    self.render_mode = 'human'
     if rid is None:
       rid = ["0"]
     elif type(rid) is str:

@@ -23,8 +23,8 @@ namespace bemaker
         ///<summary>The server port of the bemaker2unity training server.</summary>
         public int Port {get; set;} = 8080;
         public int ReceiveTimeout {get; set;} = 2000;
-        public int ReceiveBufferSize {get; set;} = 10*8192;
-        public int SendBufferSize {get; set;} = 10*8192;
+        public int ReceiveBufferSize {get; set;} = 81920;
+        public int SendBufferSize {get; set;} = 81920;
 
         private string cmdname; //It's more recently received command/action name.
         private string[] args; //It's more recently command/action arguments.
@@ -106,17 +106,22 @@ namespace bemaker
                 total = sockToSend.Receive(received);
                 if (total == 0)
                 {
-                    Debug.LogWarning($"Script bemaker2unity is not connected in agent with ID equals to {agent.ID}!");
+                    Debug.LogWarning($"Script bemaker4py is not connected in agent with ID equals to {agent.ID}!");
                     Debug.LogWarning(@"
-                    Add a RemoteConfiguration component to this agent and change the appropriate 
-                    network settings for communication with the agent’s controller.
+                    Check one of these options to try fix this problem:
+                        1) Add a RemoteConfiguration component to the current agent and change the appropriate 
+                            network settings for communication with the agent’s controller.
+                    
+                        2) Check agent if agent ID in BasicAgent component is the same that agent's ID in controller (bemaker2py).
+
+                        3) Try another network configution using the RemoteConfigution component in agent game object.
                     ");
                 }
                 return true;
             }
             catch(System.Exception e)
             {
-                Debug.LogWarning($"Script bemaker2unity is not connected in agent {agent.ID}! Start the bemaker2unity script! Network error: {e.Message}");
+                Debug.LogWarning($"Script bemaker4py is not connected in agent {agent.ID}! Start the bemaker2unity script! Network error: {e.Message}");
                 #if UNITY_EDITOR
                     EditorApplication.isPlaying = false;
                 #endif
