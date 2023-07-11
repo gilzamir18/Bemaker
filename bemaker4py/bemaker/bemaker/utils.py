@@ -177,13 +177,16 @@ def bemakercmd_parser(cmdname, args=None):
 
 def step(action, value=None):
     if value is not None:
-        return bemakercmd_parser(action, [value])
+        if isinstance(value, list) or isinstance(value, np.ndarray):
+            return bemakercmd_parser(action, value)
+        else:
+            return bemakercmd_parser(action, [value])
     else:
         return bemakercmd_parser(action)
 
 def steps(action, value, actions=None):
     cmds = [ step(action, value) ]
-    assert actions is None or type(actions) is list, "Error: invalid action list: {a}".format(a=actions)
+    assert actions is None or type(actions) is list or type(actions) is np.ndarray, "Error: invalid action list: {a}".format(a=actions)
     if actions is not None:
         for i in range(len(actions)):
             if (type(actions[i]) is tuple and len(actions[i]) == 2):
