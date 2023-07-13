@@ -59,6 +59,14 @@ namespace bemaker
             {
                 a.Initilize(this);
             }
+
+            var controlConfig = GetComponent<ControlConfiguration>();
+            if (controlConfig != null)
+            {
+                ControlInfo.skipFrame = controlConfig.skipFrame;
+                ControlInfo.repeatAction = controlConfig.repeatAction;
+            }
+
             if (remote)
             {   
                 RemoteBrain r = new RemoteBrain();

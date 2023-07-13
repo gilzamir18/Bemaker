@@ -11,6 +11,8 @@ namespace bemaker
         public bool applyingAction = false;
         public int frameCounter = -1;
         public Command[] lastCmd;
+        public int skipFrame = 4;
+        public bool repeatAction = true;
     }
 
     ///<summary>

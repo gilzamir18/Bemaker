@@ -56,6 +56,8 @@ namespace bemaker
             {
                 Agent a = agents[i];
                 a.ControlInfo = new AgentControlInfo();
+                a.ControlInfo.repeatAction = repeatAction;
+                a.ControlInfo.skipFrame = skipFrame;
                 a.ControlRequestor = this;
                 a.SetupAgent();
             }
@@ -243,7 +245,7 @@ namespace bemaker
                 }
                 else
                 {
-                    if (ctrl.frameCounter >= skipFrame)
+                    if (ctrl.frameCounter >= ctrl.skipFrame)
                     {
                         ((BasicAgent)agent).UpdateReward();
                         ctrl.frameCounter = 0;
@@ -252,7 +254,7 @@ namespace bemaker
                     }
                     else
                     {
-                        if (repeatAction)
+                        if (ctrl.repeatAction)
                         {
                             agent.ApplyAction();
                         } 
