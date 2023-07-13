@@ -5,9 +5,16 @@ using bemaker;
 
 namespace bemaker
 {
+
+    public class AgentInitilizer: MonoBehaviour
+    {
+        public virtual void Initilize(BasicAgent agent)
+        {
+            
+        }
+    }
     
-    /// <summary>DPRLAgent - Dimentional Physical Reinforcement Learning Agent
-    /// This class models an agent with physical rigidbody control in a tridimentional world. </summary>
+    /// <summary>Basic Agent - A basic reinforcement learning agent structure. </summary>
     public class BasicAgent : Agent
     {
         public delegate void AgentEpisodeHandler(BasicAgent agent);
@@ -29,6 +36,7 @@ namespace bemaker
         public int MaxStepsPerEpisode = 0;
         public float rewardScale = 1.0f;
         public List<RewardFunc> rewards;
+        public List<AgentInitilizer> initilizers;
         public GameObject body;
         
         //Agent's ridid body
@@ -47,6 +55,10 @@ namespace bemaker
 
         public override void SetupAgent()
         {
+            foreach(AgentInitilizer a in initilizers)
+            {
+                a.Initilize(this);
+            }
             if (remote)
             {   
                 RemoteBrain r = new RemoteBrain();
@@ -199,9 +211,16 @@ namespace bemaker
                 Sensor s = obj.GetComponent<Sensor>();
                 if (s != null && s.isActive)
                 {
-                    sensorList.Add(s);
-                    numberOfSensors++;
-                    sensorsMap[s.perceptionKey] = s;
+                    if (!sensorsMap.ContainsKey(s.perceptionKey))
+                    {
+                        sensorList.Add(s);
+                        numberOfSensors++;
+                        sensorsMap[s.perceptionKey] = s;
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"A sensor with the name {s.perceptionKey} already exists on agent {name}. Only the first sensor added with the same name is added to agent.");
+                    }
                 }
                 else
                 {
@@ -211,11 +230,16 @@ namespace bemaker
                         {
                             GameObject sobj = obj.transform.GetChild(j).gameObject;
                             Sensor s2 = sobj.GetComponent<Sensor>();
-                            if (s2 != null)
+                            if (s2 != null && !sensorsMap.ContainsKey(s2.perceptionKey))
                             {
                                 sensorList.Add(s2);
                                 numberOfSensors++;
                                 sensorsMap[s2.perceptionKey] = s2;
+                            } else if (s2 != null)
+                            {
+                                Debug.LogWarning($"A sensor with the name {s2.perceptionKey} already " +
+                                                                    $"exists on agent {name}. Only the first sensor added " +
+                                                                    "with the same name is added to agent.");
                             }
                         }
                     }

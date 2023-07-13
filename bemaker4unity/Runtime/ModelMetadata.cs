@@ -56,11 +56,23 @@ namespace bemaker
     {
         public ModelInput[] inputs;
         public ModelOutput[] outputs;
+        public ModelInput[] fields;
 
-        public ModelMetadata(int inputCount, int outputCount)
+        public ModelMetadata(int inputCount, int outputCount, int fieldsCount)
         {
             inputs = new ModelInput[inputCount];
             outputs = new ModelOutput[outputCount];
+            fields = new ModelInput[fieldsCount];
+        }
+
+        public void SetField(int idx, ModelInput f)
+        {
+            this.fields[idx] = f;
+        }
+
+        public ModelInput GetField(int idx)
+        {
+            return this.fields[idx];
         }
 
         public void SetInput(int idx, ModelInput i)
@@ -81,6 +93,11 @@ namespace bemaker
         public ModelOutput GetOutput(int idx)
         {
             return this.outputs[idx];
+        }
+
+        public int FieldsCount()
+        {
+            return fields.Length;
         }
 
         public int InputCount()

@@ -15,12 +15,20 @@ namespace bemaker
         {
             List<ModelInput> inputs = new List<ModelInput>();
             List<ModelOutput> outputs = new List<ModelOutput>();
+            List<ModelInput> fields = new List<ModelInput>();
 
             foreach(ISensor s in agent.Sensors)
             {
                 if (s.IsInput())
                 {
                     inputs.Add(new ModelInput(s.GetKey(), 
+                                s.GetSensorType(), s.GetShape(), 
+                                s.GetStackedObservations(),
+                                s.GetRangeMin(), s.GetRangeMax()));
+                }
+                else if (s.IsState())
+                {
+                    fields.Add(new ModelInput(s.GetKey(), 
                                 s.GetSensorType(), s.GetShape(), 
                                 s.GetStackedObservations(),
                                 s.GetRangeMin(), s.GetRangeMax()));
@@ -35,7 +43,7 @@ namespace bemaker
                 }
             }
 
-            metadata = new ModelMetadata(inputs.Count, outputs.Count);
+            metadata = new ModelMetadata(inputs.Count, outputs.Count, fields.Count);
             for (int i = 0; i < inputs.Count; i++)
             {
                 metadata.SetInput(i, inputs[i]);
@@ -44,6 +52,11 @@ namespace bemaker
             for (int i = 0; i < outputs.Count; i++)
             {
                 metadata.SetOutput(i, outputs[i]);
+            }
+
+            for (int i = 0; i < fields.Count; i++)
+            {
+                metadata.SetField(i, fields[i]);
             }
         }
 
