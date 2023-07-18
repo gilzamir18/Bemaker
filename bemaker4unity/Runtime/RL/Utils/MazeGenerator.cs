@@ -13,6 +13,9 @@ namespace bemaker
         public int line;
         public int column;
         public int depth;
+        
+        public int cost;
+        
         public Node(Node parent=null, int action=-1, int depth = 0, int column = 0, int line = 0)
         {
             this.parent = parent;
@@ -20,6 +23,11 @@ namespace bemaker
             this.depth = depth;
             this.line = line;
             this.column = column;
+        }
+
+        public int Cost(Node goal)
+        {
+            return this.depth + ( Mathf.Abs(this.line - goal.line) + Mathf.Abs(this.column + goal.column) );
         }
     }
 
@@ -29,10 +37,10 @@ namespace bemaker
         public int line;
         public int column;
 
-        public Cell()
+        public Cell(int line = 0, int column = 0)
         {
-            line = 0;
-            column = 0;
+            this.line = line;
+            this.column = column;
         }
     }
 
