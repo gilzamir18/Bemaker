@@ -27,7 +27,7 @@ namespace bemaker
 
         public int Cost(Node goal)
         {
-            return this.depth + ( Mathf.Abs(this.line - goal.line) + Mathf.Abs(this.column + goal.column) );
+            return this.depth + ( Mathf.Abs(this.line - goal.line) + Mathf.Abs(this.column - goal.column) );
         }
     }
 
