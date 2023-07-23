@@ -91,6 +91,10 @@ class BMWorker:
             pos += valuesize
         if not 'truncated' in fields:
             fields['truncated'] = False
+        if fields['truncated']:
+            fields['TimeLimit.truncated'] = True
+        else:
+            fields['TimeLimit.truncated'] = False
         return fields
 
     def proccess(self, msg):
