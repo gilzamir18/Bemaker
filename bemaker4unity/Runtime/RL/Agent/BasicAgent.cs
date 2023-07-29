@@ -26,7 +26,8 @@ namespace bemaker
         public event AgentEpisodeHandler beginOfUpdateStateEvent;
         public event AgentEpisodeHandler endOfUpdateStateEvent;
         public event AgentEpisodeHandler beginOfApplyActionEvent;
-        public event AgentEpisodeHandler endOfApplyActionEvent;  
+        public event AgentEpisodeHandler endOfApplyActionEvent; 
+        public event AgentEpisodeHandler agentRestartEvent;
 
         ///<summary> <code>doneAtNegativeReward</code> ends the simulation whenever the agent receives a negative reward.</summary>
         public bool doneAtNegativeReward = true;
@@ -457,6 +458,14 @@ namespace bemaker
         public override bool Alive()
         {
             return !Done;
+        }
+
+        public override void AgentRestart()
+        {
+            if (agentRestartEvent != null)
+            {
+                agentRestartEvent(this);
+            }
         }
 
         public override void AgentReset() 

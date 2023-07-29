@@ -20,6 +20,7 @@ class BasicController:
         self.newaction = False
         self.nextstate = None
         self.fields = None
+        self.resetid = 0
 
     def reset_behavior(self, info):
         self.actionArgs = [0, 0, 0, 0]
@@ -32,8 +33,9 @@ class BasicController:
         #print("Begin Reseting....")
         self.initialState = None
         while self.initialState is None:
-            self.agent.request_newepisode(args)
+            self.agent.request_newepisode(self.resetid, args)
             time.sleep(self.waitforinitialstate)
+        self.resetid += 1
         self.done = False
         info = self.initialState
         self.initialState = None
@@ -171,6 +173,7 @@ class BasicAgent:
         self.hasNextState = False
         self.waitingCommand = True
         self.resetargs = None
+        self.resetid = 0
 
     def request_stop(self):
         self.newStopCommand = True
@@ -179,7 +182,8 @@ class BasicAgent:
         if not self.stopped:
             self.newPauseCommand = True
 
-    def request_newepisode(self, cmds=None):
+    def request_newepisode(self, resetid, cmds=None):
+        self.resetid = resetid
         self.resetargs = cmds
         self.createANewEpisode = True
     
@@ -209,11 +213,11 @@ class BasicAgent:
         self.newInfo = True
         self.hasNextState = False
         if self.resetargs is None:
-            return step("__restart__")
+            return step("__restart__", [self.resetid])
         else:
             args = self.resetargs
             self.resetargs = None
-            return steps("__restart__", None, args)
+            return steps("__restart__", [self.resetid], args)
     def _pause(self):
         """
         Pause agent simulation in Unity.

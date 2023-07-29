@@ -214,12 +214,16 @@ namespace bemaker
                     }
                     else if (CheckCmd(cmd, "__restart__"))
                     {
-                        ctrl.frameCounter = 0;
-                        agent.NSteps = 0;
-                        ctrl.applyingAction = false;
-                        ctrl.paused = false;
-                        ctrl.stopped = false;
-                        agent.AgentReset();
+                        if (cmd[0].args[0] != ctrl.lastResetId)
+                        {
+                            ctrl.lastResetId = cmd[0].args[0];
+                            ctrl.frameCounter = 0;
+                            agent.NSteps = 0;
+                            ctrl.applyingAction = false;
+                            ctrl.paused = false;
+                            ctrl.stopped = false;
+                            agent.AgentReset();
+                        }
                     }
                     else if (CheckCmd(cmd, "__pause__"))
                     {
@@ -297,18 +301,22 @@ namespace bemaker
                 }
                 if (CheckCmd(cmds, "__restart__"))
                 {
-                    ctrl.frameCounter = -1;
-                    agent.NSteps = 0;
-                    Dictionary<string, string[]> fields = new Dictionary<string, string[]>();
-                    for (int i = 0; i < cmds.Length; i++)
+                    if (cmds[0].args[0] != ctrl.lastResetId)
                     {
-                        fields[cmds[i].name] = cmds[i].args;
+                        ctrl.lastResetId = cmds[0].args[0];
+                        ctrl.frameCounter = -1;
+                        agent.NSteps = 0;
+                        Dictionary<string, string[]> fields = new Dictionary<string, string[]>();
+                        for (int i = 0; i < cmds.Length; i++)
+                        {
+                            fields[cmds[i].name] = cmds[i].args;
+                        }
+                        agent.Brain.SetCommandFields(fields);
+                        ctrl.paused = false;
+                        ctrl.stopped = false;
+                        ctrl.applyingAction = false;
+                        agent.AgentRestart();
                     }
-                    agent.Brain.SetCommandFields(fields);
-                    ctrl.paused = false;
-                    ctrl.stopped = false;
-                    ctrl.applyingAction = false;
-                    agent.AgentReset();
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {
                     ctrl.paused = false;

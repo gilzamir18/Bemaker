@@ -13,6 +13,7 @@ namespace bemaker
         public Command[] lastCmd;
         public int skipFrame = 4;
         public bool repeatAction = true;
+        public string lastResetId = "";
     }
 
     ///<summary>
@@ -212,6 +213,11 @@ namespace bemaker
                 }
             }
             return -1;
+        }
+
+        public virtual void AgentRestart()
+        {
+            
         }
 
         public string[] GetStateDescriptions()
