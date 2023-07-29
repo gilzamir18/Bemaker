@@ -267,6 +267,7 @@ namespace bemaker
                         {
                             ctrl.applyingAction = false;
                             ((BasicAgent)agent).UpdateReward();
+                            ctrl.resetFromAction = true;
                             ctrl.lastCmd = RequestControl(agent);
                             ctrl.stopped = true;
                             ctrl.frameCounter = 0;
@@ -315,7 +316,16 @@ namespace bemaker
                         ctrl.paused = false;
                         ctrl.stopped = false;
                         ctrl.applyingAction = false;
-                        agent.AgentRestart();
+                        if (ctrl.resetFromAction)
+                        {
+                            agent.AgentReset();
+                        }
+                        else
+                        {
+                            ctrl.lastResetId = "";
+                            agent.AgentRestart();
+                        }
+                        ctrl.resetFromAction = false;
                     }
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {
