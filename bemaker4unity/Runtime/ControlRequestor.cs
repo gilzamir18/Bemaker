@@ -282,12 +282,12 @@ namespace bemaker
             } else
             {
                 Command[] cmds = null;
-                
+                bool resetAgent = false;
                 if (ctrl.lastCmd != null)
                 {
                     cmds = ctrl.lastCmd;
                     ctrl.lastCmd = null;
-                    agent.AgentReset();
+                    resetAgent = true;
                 }
                 else
                 {
@@ -319,6 +319,10 @@ namespace bemaker
                         ctrl.stopped = false;
                         ctrl.applyingAction = false;
                         agent.AgentRestart();
+                        if (resetAgent)
+                        {
+                            agent.AgentReset();
+                        }
                     }
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {
