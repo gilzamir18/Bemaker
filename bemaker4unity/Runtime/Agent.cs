@@ -13,6 +13,8 @@ namespace bemaker
         public int skipFrame = 4;
         public bool repeatAction = true;
         public string lastResetId = "";
+
+        public string lastEnvResetId = "";
     }
 
     ///<summary>
@@ -42,6 +44,8 @@ namespace bemaker
         protected string[] values;
         protected bool setupIsDone = false;
         private AgentControlInfo controlInfo;
+
+        public virtual bool Done {get; set;}
 
         public AgentControlInfo ControlInfo 
         {

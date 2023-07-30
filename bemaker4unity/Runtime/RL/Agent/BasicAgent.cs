@@ -104,7 +104,7 @@ namespace bemaker
         }
 
 
-        public bool Done
+        public override bool Done
         {
             get
             {

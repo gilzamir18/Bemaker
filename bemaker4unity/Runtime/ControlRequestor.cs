@@ -288,6 +288,7 @@ namespace bemaker
                     cmds = ctrl.lastCmd;
                     ctrl.lastCmd = null;
                     resetAgent = true;
+                    agent.Done = false;
                 }
                 else
                 {
