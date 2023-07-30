@@ -490,7 +490,7 @@ namespace bemaker
             }
         }
 
-        public void ResetReward()
+        public override void ResetReward()
         {
             reward = 0;
             if (beginOfStepEvent != null)
@@ -520,7 +520,7 @@ namespace bemaker
             }
         }
         
-        public void UpdateReward()
+        public override void UpdateReward()
         {
             int n = rewards.Count;
 

@@ -195,7 +195,7 @@ namespace bemaker
             }
             AgentControlInfo ctrl = agent.ControlInfo;
 
-            if (agent != null && !ctrl.stopped && !ctrl.paused)
+            if (agent != null && !ctrl.envmode && !ctrl.paused)
             {
                 if (agent == null)
                 {
@@ -204,12 +204,14 @@ namespace bemaker
                 if (!ctrl.applyingAction)
                 {
                     var cmd = RequestControl(agent);
-                    if (CheckCmd(cmd, "__stop__"))
+                    if (CheckCmd(cmd, "__stop__") && !ctrl.stopped)
                     {
                         ctrl.stopped = true;
                         ctrl.applyingAction = false;
                         ctrl.frameCounter = 0;
                         agent.NSteps = 0;
+                        //ctrl.lastCmd = RequestControl(agent);
+                        //Debug.Log($"STOP::CMD{agent.ID}: {cmd[0].name}");
                     }
                     else if (CheckCmd(cmd, "__restart__"))
                     {
@@ -222,6 +224,7 @@ namespace bemaker
                             ctrl.paused = false;
                             ctrl.stopped = false;
                             agent.AgentReset();
+                            //Debug.Log($"RESTART::CMD{agent.ID}: {cmd[0].name}");
                         }
                     }
                     else if (CheckCmd(cmd, "__pause__"))
@@ -229,21 +232,32 @@ namespace bemaker
                         ctrl.applyingAction = false;
                         ctrl.paused = true;
                     }
-                    else if (!CheckCmd(cmd, "__waitnewaction__"))
+                    else if (CheckCmd(cmd, "__resume__"))
+                    {
+                        ctrl.paused = false;
+                    }
+                    else if (CheckCmd(cmd, "__envcontrol__"))
+                    {
+                        ctrl.envmode = true;
+                        ctrl.paused = true;
+                    }
+                    else if (!CheckCmd(cmd, "__waitnewaction__") && !(ctrl.paused || ctrl.stopped))
                     {
                         ctrl.applyingAction = true;
                         ctrl.frameCounter = 1;
-                        ((BasicAgent)agent).ResetReward();
+                        agent.ResetReward();
                         agent.ApplyAction();
                         if (!agent.Alive())
                         {
                             ctrl.applyingAction = false;
-                            ((BasicAgent)agent).UpdateReward();
+                            agent.UpdateReward();
                             ctrl.stopped = true;
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
-                            ctrl.lastCmd = RequestControl(agent);
+                            //ctrl.lastCmd = RequestControl(agent);
+                            //Debug.Log("WA LAST CMD: "  + ctrl.lastCmd[0].name);
+                            //Debug.Log($"WC::CMD{agent.ID}: {cmd[0].name}");
                         }
                     }
                 }
@@ -251,7 +265,7 @@ namespace bemaker
                 {
                     if (ctrl.frameCounter >= ctrl.skipFrame)
                     {
-                        ((BasicAgent)agent).UpdateReward();
+                        agent.UpdateReward();
                         ctrl.frameCounter = 0;
                         ctrl.applyingAction = false;
                         agent.NSteps = agent.NSteps + 1;
@@ -266,12 +280,14 @@ namespace bemaker
                         if (!agent.Alive())
                         {
                             ctrl.applyingAction = false;
-                            ((BasicAgent)agent).UpdateReward();
+                            agent.UpdateReward();
                             ctrl.stopped = true;
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
-                            ctrl.lastCmd = RequestControl(agent);
+                            //Debug.Log($"SKF::CMD{agent.ID}");
+                            //ctrl.lastCmd = RequestControl(agent);
+                            //Debug.Log("KFF LAST CMD: "  + ctrl.lastCmd[0].name);
                         }
                         else
                         {                        
@@ -281,23 +297,22 @@ namespace bemaker
                 }
             } else
             {
-                Command[] cmds = null;
-                bool resetAgent = false;
-                if (ctrl.lastCmd != null)
-                {
-                    cmds = ctrl.lastCmd;
-                    ctrl.lastCmd = null;
-                    resetAgent = true;
-                    agent.Done = false;
-                }
-                else
-                {
-                    RequestCommand request = new RequestCommand(3);
-                    request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
-                    request.SetMessage(1, "wait_command", bemaker.Brain.STR, "restart, resume");
-                    request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
-                    cmds = RequestEnvControl(agent, request);
-                }
+                // Command[] cmds = null;
+                // bool resetAgent = false;
+                // if (ctrl.lastCmd != null)
+                // {
+                //     cmds = ctrl.lastCmd;
+                //     ctrl.lastCmd = null;
+                //     resetAgent = true;
+                // }
+                // else
+                // {
+                RequestCommand request = new RequestCommand(3);
+                request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
+                request.SetMessage(1, "wait_command", bemaker.Brain.STR, "restart, resume");
+                request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
+                var cmds = RequestEnvControl(agent, request);
+                // }
 
                 if (cmds == null)
                 {
@@ -319,15 +334,17 @@ namespace bemaker
                         ctrl.paused = false;
                         ctrl.stopped = false;
                         ctrl.applyingAction = false;
-                        agent.AgentRestart();
-                        if (resetAgent)
-                        {
-                            agent.AgentReset();
-                        }
+                        ctrl.envmode = false;
+                        // agent.AgentRestart();
+                        // if (resetAgent)
+                        // {
+                        //     agent.AgentReset();
+                        // }
                     }
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {
                     ctrl.paused = false;
+                    ctrl.envmode = false;
                 }
             }
         }

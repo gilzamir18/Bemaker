@@ -46,7 +46,7 @@ class BasicController:
     def handleNewEpisode(self, info):
         pass
 
-    def handleEndOfEpisode():
+    def handleEndOfEpisode(self, info):
         pass
 
     def _endOfEpisode(self, info):
@@ -180,7 +180,8 @@ class BasicAgent:
         self.hasNextState = False
         self.waitingCommand = True
         self.resetargs = None
-        self.resetid = 0
+        self.envcontrol = False
+        self.waitingnewepisode = True
         self.envresetid = 0
 
     def request_stop(self):
@@ -191,13 +192,13 @@ class BasicAgent:
             self.newPauseCommand = True
 
     def request_newepisode(self, resetid, cmds=None):
-        self.resetid = resetid
         self.resetargs = cmds
+        self.resetid = resetid
         self.createANewEpisode = True
     
-    def request_restart(self, cmds=None):
-        self.resetargs = cmds
-        self.newRestartCommand = True
+    def request_envcontrol(self, cmds=None):
+        self.envcontrolargs = cmds
+        self.envcontrol = True
 
     def request_resume(self):
         if self.paused and not self.stopped:
@@ -211,6 +212,15 @@ class BasicAgent:
         self.paused = False
         self.hasNextState = False
         return step("__stop__")
+
+    def _envcontrol(self): 
+        """
+        Stop agent simulation in Unity.
+        """
+        self.stopped = True
+        self.paused = False
+        self.hasNextState = False
+        return step("__envcontrol__")
 
     def _restart(self):
         """
@@ -236,11 +246,15 @@ class BasicAgent:
         self.newInfo = True
         self.hasNextState = False
         if self.resetargs is None:
-            return step("__restart__", [self.envresetid])
+            cid = self.envresetid
+            self.envresetid += 1
+            return step("__restart__", [cid])
         else:
             args = self.resetargs
             self.resetargs = None
-            return steps("__restart__", [self.envresetid], args)
+            cid = self.envresetid
+            self.envresetid += 1
+            return steps("__restart__", [cid], args)
 
     def _pause(self):
         """
@@ -265,37 +279,44 @@ class BasicAgent:
         if self.hasNextState:
             self.__get_controller().nextstate = info.copy()
             self.hasNextState = False
-
+        
         if self.newInfo:
             self.newInfo = False
             ctrl = self.__get_controller()
             ctrl.initialState = info
             ctrl.handleNewEpisode(info)
-
+            
         if self.createANewEpisode:
+            #print(f"==================> CREATENEWEPSCMD {self.id}")
+            self.waitingnewepisode = False
+            ctrl = self.__get_controller()
             self.createANewEpisode = False
             self.newInfo = True
             return self._restart()
         
         if self.newPauseCommand:
+            #print(f"==================> NEWPAUSECMD {self.id}")
             self.newPauseCommand = False
             self.lastinfo = info
             return self._pause()
 
         if  self.newStopCommand:
+            #print(f"==================> NEWSTOPCMD {self.id}")
             self.newStopCommand = False
+            self.waitingnewepisode = True
             return self._stop()
 
-        if self.newRestartCommand:
+        if self.envcontrol:
             ctrl = self.__get_controller()
-            self.newInfo = True
+            self.newInfo = False
             self.paused = False
-            self.newRestartCommand = False
-            r = self._restart()
-            ctrl.resetid += 1
+            self.stopped = False
+            self.envcontrol = False
+            r = self._envcontrol()
             return r
 
-        if info['done']:
+        if info['done'] and not self.waitingnewepisode:
+            self.waitingnewepisode = True
             self.lastinfo = info
             self.__get_controller()._endOfEpisode(info)
             return self._stop()
@@ -316,25 +337,24 @@ class BasicAgent:
             #print("waiting command from unity...")
             self.waitingCommand = True
             if self.createANewEpisode:
+                self.waitingnewepisode = False
                 self.createANewEpisode = False
                 self.newInfo = True
                 self.waitingCommand = False
-                r = self._restartfromenv()
-                self.envresetid += 1
-                return r
+                return self._restartfromenv()
             if self.newResumeCommand:
                 self.waitingCommand = False
                 return self._resume()
             elif self.newRestartCommand:
+                self.waitingnewepisode = False
                 self.newRestartCommand = False
                 self.waitingCommand = False
                 self.newInfo = True
                 self.paused = False
-                r = self._restartfromenv()
-                self.envresetid += 1
-                return r
+                return self._restartfromenv()
             elif self.newStopCommand:
                 self.newStopCommand = False
+                self.waitingnewepisode = True
                 return self._stop()
         return stepfv('__noop__', [0])
 

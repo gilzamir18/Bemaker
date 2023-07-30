@@ -15,6 +15,8 @@ namespace bemaker
         public string lastResetId = "";
 
         public string lastEnvResetId = "";
+
+        public bool envmode = true;
     }
 
     ///<summary>
@@ -221,6 +223,16 @@ namespace bemaker
         public virtual void AgentRestart()
         {
             
+        }
+        
+        public virtual void UpdateReward()
+        {
+
+        }
+        
+        public virtual void ResetReward()
+        {
+
         }
 
         public string[] GetStateDescriptions()
