@@ -210,14 +210,13 @@ namespace bemaker
                         ctrl.applyingAction = false;
                         ctrl.frameCounter = 0;
                         agent.NSteps = 0;
-                        agent.AgentReset();
                     }
                     else if (CheckCmd(cmd, "__restart__"))
                     {
                         if (cmd[0].args[0] != ctrl.lastResetId)
                         {
                             ctrl.lastResetId = cmd[0].args[0];
-                            ctrl.frameCounter = 0;
+                            ctrl.frameCounter = -1;
                             agent.NSteps = 0;
                             ctrl.applyingAction = false;
                             ctrl.paused = false;
@@ -240,10 +239,11 @@ namespace bemaker
                         {
                             ctrl.applyingAction = false;
                             ((BasicAgent)agent).UpdateReward();
-                            ctrl.lastCmd = RequestControl(agent);
                             ctrl.stopped = true;
+                            ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
+                            ctrl.lastCmd = RequestControl(agent);
                         }
                     }
                 }
@@ -267,11 +267,11 @@ namespace bemaker
                         {
                             ctrl.applyingAction = false;
                             ((BasicAgent)agent).UpdateReward();
-                            ctrl.resetFromAction = true;
-                            ctrl.lastCmd = RequestControl(agent);
                             ctrl.stopped = true;
+                            ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
+                            ctrl.lastCmd = RequestControl(agent);
                         }
                         else
                         {                        
@@ -282,10 +282,12 @@ namespace bemaker
             } else
             {
                 Command[] cmds = null;
+                
                 if (ctrl.lastCmd != null)
                 {
                     cmds = ctrl.lastCmd;
                     ctrl.lastCmd = null;
+                    agent.AgentReset();
                 }
                 else
                 {
@@ -316,16 +318,7 @@ namespace bemaker
                         ctrl.paused = false;
                         ctrl.stopped = false;
                         ctrl.applyingAction = false;
-                        if (ctrl.resetFromAction)
-                        {
-                            agent.AgentReset();
-                        }
-                        else
-                        {
-                            ctrl.lastResetId = "";
-                            agent.AgentRestart();
-                        }
-                        ctrl.resetFromAction = false;
+                        agent.AgentRestart();
                     }
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {

@@ -92,20 +92,25 @@ class BasicController:
                 (not self.agent.paused) and (not self.agent.waitingCommand) ):
             time.sleep(self.waitfornextstate)
         
+        #check if environment is waiting a command
         if self.agent.waitingCommand:
             self.lastinfo['envmode'] = True
             self.lastinfo['done'] = True
+            self.done = True
+            self.lastinfo['reward'] = 0
             if gymformat:
                 return self.lastinfo, self.lastinfo['reward'], True, truncated, {}
             else:
                 return self.lastinfo
 
         if self.agent.paused:
+            #resume if current action is resume and paused.
             if self.actionName == '__resume__':
                 self.resume()
                 self.lastinfo['paused'] = False
             else:
                 self.lastinfo['paused'] = True
+            #return current last state
             if gymformat:
                 return self.lastinfo, self.lastinfo['reward'], True, truncated, {}
             else:
@@ -140,7 +145,9 @@ class BasicController:
                 return self.agent._stop()
             elif (self.actionName == "__restart__"):
                 self.actionName = self.defaultAction
-                return self.agent._restart()
+                r = self.agent._restart()
+                self.resetid += 1
+                return r
             else:
                 action = steps(self.actionName,  self.actionArgs, self.fields)
                 self.actionArgs = self.defaultActionArgs.copy()
@@ -174,6 +181,7 @@ class BasicAgent:
         self.waitingCommand = True
         self.resetargs = None
         self.resetid = 0
+        self.envresetid = 0
 
     def request_stop(self):
         self.newStopCommand = True
@@ -218,6 +226,22 @@ class BasicAgent:
             args = self.resetargs
             self.resetargs = None
             return steps("__restart__", [self.resetid], args)
+    
+    def _restartfromenv(self):
+        """
+        Restart agent simulation in Unity.
+        """
+        self.stopped = False
+        self.paused = False
+        self.newInfo = True
+        self.hasNextState = False
+        if self.resetargs is None:
+            return step("__restart__", [self.envresetid])
+        else:
+            args = self.resetargs
+            self.resetargs = None
+            return steps("__restart__", [self.envresetid], args)
+
     def _pause(self):
         """
         Pause agent simulation in Unity.
@@ -248,7 +272,6 @@ class BasicAgent:
             ctrl.initialState = info
             ctrl.handleNewEpisode(info)
 
-
         if self.createANewEpisode:
             self.createANewEpisode = False
             self.newInfo = True
@@ -264,10 +287,13 @@ class BasicAgent:
             return self._stop()
 
         if self.newRestartCommand:
+            ctrl = self.__get_controller()
             self.newInfo = True
             self.paused = False
             self.newRestartCommand = False
-            return self._restart()
+            r = self._restart()
+            ctrl.resetid += 1
+            return r
 
         if info['done']:
             self.lastinfo = info
@@ -293,7 +319,9 @@ class BasicAgent:
                 self.createANewEpisode = False
                 self.newInfo = True
                 self.waitingCommand = False
-                return self._restart()
+                r = self._restartfromenv()
+                self.envresetid += 1
+                return r
             if self.newResumeCommand:
                 self.waitingCommand = False
                 return self._resume()
@@ -302,7 +330,9 @@ class BasicAgent:
                 self.waitingCommand = False
                 self.newInfo = True
                 self.paused = False
-                return self._restart()
+                r = self._restartfromenv()
+                self.envresetid += 1
+                return r
             elif self.newStopCommand:
                 self.newStopCommand = False
                 return self._stop()

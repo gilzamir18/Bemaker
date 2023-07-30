@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace bemaker
 {
-
     public class AgentControlInfo
     {
         public bool paused = false;
@@ -14,7 +13,6 @@ namespace bemaker
         public int skipFrame = 4;
         public bool repeatAction = true;
         public string lastResetId = "";
-        public bool resetFromAction = false;
     }
 
     ///<summary>
