@@ -133,6 +133,16 @@ namespace bemaker
             //TODO
         }
 
+        public virtual void BeginOfEpisode()
+        {
+            //TODO
+        }
+
+        public virtual void BeginOfStep()
+        {
+            //TODO
+        }
+
         public bool SetupIsDone
         {
             get

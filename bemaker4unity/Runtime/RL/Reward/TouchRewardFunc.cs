@@ -80,7 +80,6 @@ namespace  bemaker
             if (agent.body.GetComponent<Collider>() == collider) {
                 touched = true;
                 agent.touchListener(this);  
-
                 if (precondition != null) {
                     if (!precondition.allowNext || !precondition.wasTouched(agent)){
                         agent.AddReward(-painForViolatinPrecondition, this);
@@ -99,12 +98,15 @@ namespace  bemaker
                     }
                 }
 
-                if ( (counter < maxTouch) || (maxTouch < 0)  )
+                if (!agent.Done)
                 {
-                    counter++;
-                    acmReward += rewardValue;
-                } else if (maxTouch >= 0 && counter >= maxTouch) {
-                    acmReward -= painForOverTouch;
+                    if ( (counter < maxTouch) || (maxTouch < 0)  )
+                    {
+                        counter++;
+                        acmReward += rewardValue;
+                    } else if (maxTouch >= 0 && counter >= maxTouch) {
+                        acmReward -= painForOverTouch;
+                    }
                 }
             }
         }

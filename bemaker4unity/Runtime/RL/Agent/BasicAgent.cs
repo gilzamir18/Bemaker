@@ -367,6 +367,23 @@ namespace bemaker
             }
         }
 
+        public override void BeginOfEpisode()
+        {
+            if (beginOfEpisodeEvent != null)
+            {
+                beginOfEpisodeEvent(this);
+            }
+        }
+
+        public override void BeginOfStep()
+        {
+            if (beginOfStepEvent != null)
+            {
+                beginOfStepEvent(this);
+            }
+        }
+
+
         public virtual void AddReward(float v, RewardFunc from = null){
             if (doneAtNegativeReward && v < 0) {
                 Done = true;
@@ -475,10 +492,7 @@ namespace bemaker
                 beforeTheResetEvent(this);
             }
             ResetPlayer();
-            if (beginOfEpisodeEvent != null)
-            {
-                beginOfEpisodeEvent(this);
-            }
+            BeginOfEpisode();
         }
 
         private bool checkFirstTouch(string tag){
@@ -493,10 +507,6 @@ namespace bemaker
         public override void ResetReward()
         {
             reward = 0;
-            if (beginOfStepEvent != null)
-            {
-                beginOfStepEvent(this);
-            }
         }
 
         private void ResetPlayer()

@@ -189,18 +189,17 @@ namespace bemaker
 
         private void AgentUpdate(Agent agent)
         {
-            if (!agent.SetupIsDone)
-            {
-                return;
-            }
-            AgentControlInfo ctrl = agent.ControlInfo;
-
-            if (agent != null && !ctrl.envmode && !ctrl.paused)
+            if (agent == null || !agent.SetupIsDone)
             {
                 if (agent == null)
                 {
-                    Debug.LogWarning("ControlRequest requires at least one agent!");
+                    Debug.LogWarning("ControlRequest update loop called with null agent!");
                 }
+                return;
+            }
+            AgentControlInfo ctrl = agent.ControlInfo;
+            if (!ctrl.envmode)
+            {
                 if (!ctrl.applyingAction)
                 {
                     var cmd = RequestControl(agent);
@@ -246,12 +245,13 @@ namespace bemaker
                         ctrl.applyingAction = true;
                         ctrl.frameCounter = 1;
                         agent.ResetReward();
+                        agent.BeginOfStep();
                         agent.ApplyAction();
                         if (!agent.Alive())
                         {
+                            ctrl.stopped = true;
                             ctrl.applyingAction = false;
                             agent.UpdateReward();
-                            ctrl.stopped = true;
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
@@ -261,11 +261,13 @@ namespace bemaker
                         }
                     }
                 }
-                else
+                else if (!ctrl.stopped && !ctrl.paused)
                 {
+                    bool rewardUpdated = false;
                     if (ctrl.frameCounter >= ctrl.skipFrame)
                     {
                         agent.UpdateReward();
+                        rewardUpdated = true;
                         ctrl.frameCounter = 0;
                         ctrl.applyingAction = false;
                         agent.NSteps = agent.NSteps + 1;
@@ -279,9 +281,12 @@ namespace bemaker
                         
                         if (!agent.Alive())
                         {
-                            ctrl.applyingAction = false;
-                            agent.UpdateReward();
                             ctrl.stopped = true;
+                            ctrl.applyingAction = false;
+                            if (!rewardUpdated)
+                            {
+                                agent.UpdateReward();
+                            }
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
