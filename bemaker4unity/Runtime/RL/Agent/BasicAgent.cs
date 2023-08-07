@@ -35,12 +35,31 @@ namespace bemaker
         public bool doneAtPositiveReward = false;
         ///<summary>The maximum number of steps per episode.</summary>
         public int MaxStepsPerEpisode = 0;
+        /// <summary>
+        /// The reward scale property is a real number multiplied by the accumulated agent's reward received
+        /// during the episode.
+        /// </summary>
         public float rewardScale = 1.0f;
+        /// <summary>
+        /// List of the reward functions.
+        /// </summary>
         public List<RewardFunc> rewards;
+        /// <summary>
+        /// List of the initializers. An initializer define programmmaticaly a way to change an agent's property.
+        /// </summary>
         public List<AgentInitilizer> initilizers;
+        /// <summary>
+        /// Agent's body contains a rigid body component (Rigidbody) of the agent. 
+        /// </summary>
         public GameObject body;
-        
-        //Agent's ridid body
+
+        /// <summary>
+        ///  If this property is true, a named property of ‘truncated’ is created indicating whether 
+        ///  the episode ended due to timeout (in which case truncated is true) or if it ended due to 
+        ///  another event (in which case truncated is false).
+        /// </summary>
+        public bool checkEpisodeTruncated = true;
+
         private bool done;
         private bool truncated;
         protected float reward;
@@ -206,11 +225,14 @@ namespace bemaker
             sensorList.Add(stepSensor);
             sensorsMap[stepSensor.GetKey()] = stepSensor;
 
-            AgentTruncatedSensor truncatedSensor = new AgentTruncatedSensor();
-            truncatedSensor.SetIsInput(false);
-            truncatedSensor.SetAgent(this);
-            sensorList.Add(truncatedSensor);
-            sensorsMap[truncatedSensor.GetKey()] = truncatedSensor;
+            if (checkEpisodeTruncated)
+            {
+                AgentTruncatedSensor truncatedSensor = new AgentTruncatedSensor();
+                truncatedSensor.SetIsInput(false);
+                truncatedSensor.SetAgent(this);
+                sensorList.Add(truncatedSensor);
+                sensorsMap[truncatedSensor.GetKey()] = truncatedSensor;
+            }
 
             numberOfSensors = 5;
 
