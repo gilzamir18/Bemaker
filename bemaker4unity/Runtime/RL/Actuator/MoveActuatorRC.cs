@@ -63,7 +63,7 @@ namespace bemaker {
                 }
 
                 Rigidbody rBody = agent.body.GetComponent<Rigidbody>();
-                Transform reference = agent.gameObject.transform;
+                Transform reference = agent.body.transform;
 
                 if (rBody != null)
                 {
