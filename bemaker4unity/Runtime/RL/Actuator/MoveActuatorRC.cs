@@ -43,6 +43,7 @@ namespace bemaker {
             if (agent != null && !agent.Done)
             {
                 float[] action = agent.GetActionArgAsFloatArray();
+                //Debug.Log(action[0] + ", " + action[1] + ", " + action[2] + ", " + action[3]);
                 move = action[0];
                 turn = action[1];
                 //Debug.Log("move : " + move);
@@ -61,7 +62,7 @@ namespace bemaker {
                     }
                 }
 
-                Rigidbody rBody = agent.GetComponent<Rigidbody>();
+                Rigidbody rBody = agent.body.GetComponent<Rigidbody>();
                 Transform reference = agent.gameObject.transform;
 
                 if (rBody != null)

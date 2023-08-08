@@ -133,6 +133,7 @@ class BasicController:
         Return a new action based in new info 'info'.
         """
         if self.newaction:
+            self.newaction = False
             self.lastinfo = info.copy()
             if (self.actionName == '__pause__') and not self.agent.paused:
                 self.actionName = self.defaultAction
@@ -150,8 +151,8 @@ class BasicController:
                 return r
             else:
                 action = steps(self.actionName,  self.actionArgs, self.fields)
+                self.actionName = self.defaultAction
                 self.actionArgs = self.defaultActionArgs.copy()
-                self.newaction = False
                 self.agent.hasNextState = True
                 return action
         else:
