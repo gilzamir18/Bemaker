@@ -37,4 +37,7 @@ The Python component of BeMaker can be installed using a local pip package. To i
 
 BeMaker was tested on Ubuntu 22.04 and Windows 11. On Ubuntu 22.04, the best experience was achieved by installing Unity Hub beta and Unity Editor 2022.2.1f1. The optimal scenario is to use Unity and BeMaker on a Windows environment (10 or 11).
 
+WARNING: Python 3.11 is not supported. We have encountered module problems when using Python 3.11. The Python version used to test this library is the 3.10.* series.
+
+
 
