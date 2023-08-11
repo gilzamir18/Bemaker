@@ -8,7 +8,7 @@ class GenericEnvironment(gym.Env):
   metadata = {'render.modes': ['human']}
   envidx = 0
   controllers = None
-  def __init__(self, controller_class=BasicGymController, rid=None, server_IP="127.0.0.1", server_port=8080, sleep=0.1, buffer_size=8192):
+  def __init__(self, controller_class=BasicGymController, rid=None, server_IP="127.0.0.1", server_port=8080, sleep=0.1, buffer_size=8192, event_callback=None):
     super(GenericEnvironment, self).__init__()
     # Define action and observation space
     # They must be gym.spaces objects
@@ -39,7 +39,7 @@ class GenericEnvironment(gym.Env):
     self.rid = rid[GenericEnvironment.envidx]
     self.controller = GenericEnvironment.controllers[self.rid]
     GenericEnvironment.envidx += 1
-    self.reset_callback = None
+    self.event_callback = event_callback
     self.reset()
     if self.controller.action_space is not None:
       self.action_space = self.controller.action_space
@@ -52,19 +52,13 @@ class GenericEnvironment(gym.Env):
       self.observation_space = None
   
     self.rid =  rid
-    self.step_callback = None
-  
-  def set_stepcallback(self, step_callback):
-    self.step_callback = step_callback
 
-  def set_resetcallback(self, reset_cbk):
-    self.reset_callback = reset_cbk
 
   def step(self, action):
     info = self.controller.request_step(action)
     state = self.controller.get_state(info)
-    if self.step_callback is not None:
-      self.step_callback(action, state, info)
+    if self.event_callback is not None:
+      self.event_callback.on_step(action, state, info)
     return state
 
   def reset(self, seed=None, **options):
@@ -73,10 +67,11 @@ class GenericEnvironment(gym.Env):
     
     if seed is not None:
       self.seed = seed
-    
-    if self.reset_callback is not None:
-      self.reset_callback()
-    return self.controller.request_reset()
+
+    reset_returned_data =  self.controller.request_reset()    
+    if self.event_callback is not None:
+      self.event_callback.on_reset(reset_returned_data)
+    return reset_returned_data
 
   def render(self, mode='human'):
     return self.controller.render()

@@ -209,7 +209,6 @@ namespace bemaker
                         ctrl.applyingAction = false;
                         ctrl.frameCounter = 0;
                         agent.NSteps = 0;
-                        //ctrl.lastCmd = RequestControl(agent);
                         //Debug.Log($"STOP::CMD{agent.ID}: {cmd[0].name}");
                     }
                     else if (CheckCmd(cmd, "__restart__"))
@@ -217,7 +216,7 @@ namespace bemaker
                         if (cmd[0].args[0] != ctrl.lastResetId)
                         {
                             ctrl.lastResetId = cmd[0].args[0];
-                            ctrl.frameCounter = -1;
+                            ctrl.frameCounter = 0;
                             agent.NSteps = 0;
                             ctrl.applyingAction = false;
                             ctrl.paused = false;
@@ -255,19 +254,14 @@ namespace bemaker
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
-                            //ctrl.lastCmd = RequestControl(agent);
-                            //Debug.Log("WA LAST CMD: "  + ctrl.lastCmd[0].name);
-                            //Debug.Log($"WC::CMD{agent.ID}: {cmd[0].name}");
                         }
                     }
                 }
                 else if (!ctrl.stopped && !ctrl.paused)
                 {
-                    bool rewardUpdated = false;
                     if (ctrl.frameCounter >= ctrl.skipFrame)
                     {
                         agent.UpdateReward();
-                        rewardUpdated = true;
                         ctrl.frameCounter = 0;
                         ctrl.applyingAction = false;
                         agent.NSteps = agent.NSteps + 1;
@@ -283,16 +277,10 @@ namespace bemaker
                         {
                             ctrl.stopped = true;
                             ctrl.applyingAction = false;
-                            if (!rewardUpdated)
-                            {
-                                agent.UpdateReward();
-                            }
+                            agent.UpdateReward();
                             ctrl.paused = false;
                             ctrl.frameCounter = 0;
                             agent.NSteps = 0;
-                            //Debug.Log($"SKF::CMD{agent.ID}");
-                            //ctrl.lastCmd = RequestControl(agent);
-                            //Debug.Log("KFF LAST CMD: "  + ctrl.lastCmd[0].name);
                         }
                         else
                         {                        
@@ -302,16 +290,6 @@ namespace bemaker
                 }
             } else
             {
-                // Command[] cmds = null;
-                // bool resetAgent = false;
-                // if (ctrl.lastCmd != null)
-                // {
-                //     cmds = ctrl.lastCmd;
-                //     ctrl.lastCmd = null;
-                //     resetAgent = true;
-                // }
-                // else
-                // {
                 RequestCommand request = new RequestCommand(3);
                 request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
                 request.SetMessage(1, "wait_command", bemaker.Brain.STR, "restart, resume");
@@ -340,11 +318,7 @@ namespace bemaker
                         ctrl.stopped = false;
                         ctrl.applyingAction = false;
                         ctrl.envmode = false;
-                        // agent.AgentRestart();
-                        // if (resetAgent)
-                        // {
-                        //     agent.AgentReset();
-                        // }
+                        agent.AgentRestart();
                     }
                 } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
                 {

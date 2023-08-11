@@ -50,8 +50,8 @@ class BasicController:
         pass
 
     def _endOfEpisode(self, info):
+        self.handleEndOfEpisode(self.lastinfo)
         self.lastinfo = info
-        self.handleEndOfEpisode(info)
         self.nextstate = info
         self.initialState = None
         self.done = True
