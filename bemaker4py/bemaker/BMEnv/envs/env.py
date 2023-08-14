@@ -56,7 +56,7 @@ class GenericEnvironment(gym.Env):
 
   def step(self, action):
     info = self.controller.request_step(action)
-    state = self.controller.get_state(info)
+    state = self.controller.transform_state(info)
     if self.event_callback is not None:
       self.event_callback.on_step(action, state, info)
     return state

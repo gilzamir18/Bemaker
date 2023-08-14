@@ -14,7 +14,7 @@ obs = env.reset()
 reward_sum = 0
 while True:
     action, _states = model.predict(obs, deterministic=True)
-    obs, reward, done, info = env.step(action)
+    obs, reward, done, truncated, info = env.step(action)
     reward_sum += reward
     env.render()
     if done:

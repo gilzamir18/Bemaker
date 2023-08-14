@@ -47,3 +47,6 @@ class SimpleController(bemaker.agents.BasicController):
         elif action == 7:
             self.actionName = "__resume__"
             self.actionArgs = [0]
+        elif action == 8:
+            self.actionName = "__restart__"
+            self.actionArgs = [0]

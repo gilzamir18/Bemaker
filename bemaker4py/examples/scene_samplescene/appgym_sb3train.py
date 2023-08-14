@@ -1,12 +1,12 @@
 import bemaker
 from bemaker.controllers import BasicGymController
-import bemakerEnv
+import BMEnv
 import gym
 import numpy as np
 from stable_baselines3 import SAC
 from stable_baselines3.sac import MultiInputPolicy
 
-env = gym.make("bemakerEnv-v0")
+env = gym.make("BMEnv-v0")
 
 model = SAC(MultiInputPolicy, env, verbose=1, tensorboard_log="SAC")
 print("Training....")
