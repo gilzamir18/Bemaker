@@ -93,6 +93,7 @@ class BasicController:
     def restoreDefaultAction(self):
         self.actionName = "__waitnewaction__"
         self.actionArgs = [0]
+        self.fields = None
 
 
 class BasicAgent:
@@ -124,9 +125,13 @@ class BasicAgent:
     def check_firststep(self, info):
         return info['steps'] == 0
  
-    def __step(self, actionName, actionArgs, info):
-        assert info['id'] == self.id, "Error: inconsistent agent identification!"       
-        return step(actionName, actionArgs)
+    def __step(self, actionName, actionArgs, fields, info):
+        assert info['id'] == self.id, "Error: inconsistent agent identification!"
+        if fields is None:
+            return step(actionName, actionArgs)
+        else:
+            return steps(actionName, actionArgs, fields)
+
 
     def __stop(self): 
         """
@@ -187,6 +192,7 @@ class BasicAgent:
     def act(self, info):
         actionName = self.__get_controller().actionName
         actionArgs = self.__get_controller().actionArgs
+        fields = self.__get_controller().fields
         self.__get_controller().restoreDefaultAction()
         self.info = info
 
@@ -213,7 +219,7 @@ class BasicAgent:
                 self.__get_controller().nextstate = info
                 self.newaction = False
                 self.steps += 1
-                return self.__step(actionName, actionArgs, info)
+                return self.__step(actionName, actionArgs, fields, info)
             else:
                 return step("__waitnewaction__", [0])
         return step("__waitnewaction__", [0])
