@@ -163,6 +163,7 @@ namespace bemaker {
             turn = 0;
             move = 0;
             jump = 0;
+            brake = 0;
             jumpForward = 0;
             onGround = false;
         }
