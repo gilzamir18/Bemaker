@@ -71,7 +71,7 @@ namespace bemaker
         private int numberOfSensors = 0;
         private int numberOfActuators = 0;
         private ModelMetadataLoader metadataLoader;
-
+        private int NUMBER_OF_CONTROLINFO = 7;
 
         public override void SetupAgent()
         {
@@ -331,9 +331,9 @@ namespace bemaker
 
             int totalNumberOfSensors = sensorList.Count;
 
-            desc = new string[totalNumberOfSensors];
-            types = new byte[totalNumberOfSensors];
-            values = new string[totalNumberOfSensors];
+            desc = new string[totalNumberOfSensors + NUMBER_OF_CONTROLINFO];
+            types = new byte[totalNumberOfSensors + NUMBER_OF_CONTROLINFO];
+            values = new string[totalNumberOfSensors + NUMBER_OF_CONTROLINFO];
 
             foreach (RewardFunc r in rewards)
             {
@@ -630,6 +630,13 @@ namespace bemaker
                         break;
                 }
             }
+            SetStateAsBool(n, "__ctrl_paused__", ControlInfo.paused);
+            SetStateAsBool(n+1, "__ctrl_stopped__", ControlInfo.stopped);
+            SetStateAsBool(n+2, "__ctrl_applyingAction__", ControlInfo.applyingAction);
+            SetStateAsInt(n+3, "__ctrl_frameCounter__", ControlInfo.frameCounter);
+            SetStateAsInt(n+4, "__ctrl_skipFrame__", ControlInfo.skipFrame);
+            SetStateAsBool(n+5, "__ctrl_repeatAction__", ControlInfo.repeatAction);
+            SetStateAsBool(n+6, "__ctrl_envMode__", ControlInfo.envmode);
         }
     }
 }

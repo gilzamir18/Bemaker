@@ -213,17 +213,14 @@ namespace bemaker
                     }
                     else if (CheckCmd(cmd, "__restart__"))
                     {
-                        if (cmd[0].args[0] != ctrl.lastResetId)
-                        {
-                            ctrl.lastResetId = cmd[0].args[0];
-                            ctrl.frameCounter = 0;
-                            agent.NSteps = 0;
-                            ctrl.applyingAction = false;
-                            ctrl.paused = false;
-                            ctrl.stopped = false;
-                            agent.AgentReset();
-                            //Debug.Log($"RESTART::CMD{agent.ID}: {cmd[0].name}");
-                        }
+                        ctrl.lastResetId = cmd[0].args[0];
+                        ctrl.frameCounter = 0;
+                        agent.NSteps = 0;
+                        ctrl.applyingAction = false;
+                        ctrl.paused = false;
+                        ctrl.stopped = false;
+                        agent.AgentReset();
+                        //Debug.Log($"RESTART::CMD{agent.ID}: {cmd[0].name}");
                     }
                     else if (CheckCmd(cmd, "__pause__"))
                     {
@@ -295,7 +292,6 @@ namespace bemaker
                 request.SetMessage(1, "wait_command", bemaker.Brain.STR, "restart, resume");
                 request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
                 var cmds = RequestEnvControl(agent, request);
-                // }
 
                 if (cmds == null)
                 {
@@ -303,27 +299,20 @@ namespace bemaker
                 }
                 if (CheckCmd(cmds, "__restart__"))
                 {
-                    if (cmds[0].args[0] != ctrl.lastResetId)
+                    ctrl.lastResetId = cmds[0].args[0];
+                    ctrl.frameCounter = -1;
+                    agent.NSteps = 0;
+                    Dictionary<string, string[]> fields = new Dictionary<string, string[]>();
+                    for (int i = 0; i < cmds.Length; i++)
                     {
-                        ctrl.lastResetId = cmds[0].args[0];
-                        ctrl.frameCounter = -1;
-                        agent.NSteps = 0;
-                        Dictionary<string, string[]> fields = new Dictionary<string, string[]>();
-                        for (int i = 0; i < cmds.Length; i++)
-                        {
-                            fields[cmds[i].name] = cmds[i].args;
-                        }
-                        agent.Brain.SetCommandFields(fields);
-                        ctrl.paused = false;
-                        ctrl.stopped = false;
-                        ctrl.applyingAction = false;
-                        ctrl.envmode = false;
-                        agent.AgentRestart();
+                        fields[cmds[i].name] = cmds[i].args;
                     }
-                } else if (ctrl.paused && CheckCmd(cmds, "__resume__"))
-                {
+                    agent.Brain.SetCommandFields(fields);
                     ctrl.paused = false;
+                    ctrl.stopped = false;
+                    ctrl.applyingAction = false;
                     ctrl.envmode = false;
+                    agent.AgentRestart();
                 }
             }
         }
