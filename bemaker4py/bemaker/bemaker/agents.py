@@ -115,7 +115,6 @@ class BasicAgent:
         self.envresetid = 0
         self.info = None
         self.stop = False
-        self.terminated = False
       
     def check_outofepisode(self, info):
         return info['__ctrl_stopped__'] or info['done'] or info['__ctrl_paused__']
@@ -198,7 +197,6 @@ class BasicAgent:
         self.info = info
 
         if info['done'] and not info['__ctrl_stopped__']:
-            print("DONE and not stopeed: ", self.id)
             self.__get_controller().nextstate = info
             self.__get_controller().handleEndOfEpisode(info)
             return self.__stop()
