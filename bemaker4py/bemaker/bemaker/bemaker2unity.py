@@ -16,7 +16,7 @@ class BMUDPHandler(socketserver.DatagramRequestHandler):
             print("WARNING: returning empty message!")
             self.wfile.write("".encode(encoding="utf-8"))
 
-def create_server(agents, ids, server_IP="127.0.0.1", server_port=8080, buffer_size=8192, waittime=0, timeout=10):
+def create_server(agents, ids, server_IP="127.0.0.1", server_port=8080, buffer_size=8192, waittime=0, timeout=20):
     for i in range(len(agents)):
         if not BMWorker.register_agent(agents[i], ids[i], waittime, timeout):
             sys.exit(-1)
