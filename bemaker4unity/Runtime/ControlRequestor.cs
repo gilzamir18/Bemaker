@@ -67,7 +67,6 @@ namespace bemaker
 
         void OnApplicationQuit()
         {
-            Debug.Log("ENDINGGGGG");
             foreach(var agent in agents)
             {
                 RequestCommand request = new RequestCommand(3);
