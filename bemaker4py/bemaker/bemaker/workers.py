@@ -19,9 +19,9 @@ class BMWorker:
     _agents = {}
     _n_agents = 0 
 
-    def register_agent(Agent_Class, id = 0, waittime=0.01):
+    def register_agent(Agent_Class, id = 0, waittime=0.01, timeout=10):
         dirs = dir(Agent_Class)
-        agent = Agent_Class(Queue(), Queue(), waittime)
+        agent = Agent_Class(Queue(1), Queue(1), waittime, timeout)
         agent.id = id
         if  "act" in dirs  and  "handleEnvCtrl" in dirs:
             sig = signature(Agent_Class.act)

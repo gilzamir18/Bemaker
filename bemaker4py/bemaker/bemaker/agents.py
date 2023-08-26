@@ -18,6 +18,7 @@ class BasicController:
         self.fields = None
         self.max_steps = 0
         self.metadatamodel = None
+        self.lastinfo = None
 
     def close(self):
         pass #release resources here
@@ -51,7 +52,9 @@ class BasicController:
 
     def request_reset(self, args=None):
         self.agent.qin.put(["reset"])
-        info = self.agent.qout.get()
+        info = self.agent.qout.get(timeout=self.agent.timeout)
+        if info == "halt":
+            sys.exit(0)
         self.restoreDefaultAction()
         return self.reset_behavior(info)
 
@@ -67,8 +70,11 @@ class BasicController:
         action['args'] = self.actionArgs
         action['fields'] = self.fields
         self.agent.qin.put(['act', action])
-        info = self.agent.qout.get()
+        info = self.agent.qout.get(timeout=self.agent.timeout)
+        if info=="halt":
+            sys.exit(0)
         self.restoreDefaultAction()
+        self.lastinfo = info
         return info
 
     def restoreDefaultAction(self):
@@ -82,7 +88,7 @@ class BasicAgent:
         'agent_id': 0
     }
 
-    def __init__(self, qin:Queue, qout:Queue, waittime:float=0.01):
+    def __init__(self, qin:Queue, qout:Queue, waittime:float=0.01, timeout:float=10):
         self.max_step = 0
         self.id = 0
         self.controller = BasicController()
@@ -92,15 +98,19 @@ class BasicAgent:
         self.request_action = False
         self.waittime = waittime
         self.action = None
-        self.initial_state = None
-        self.new_state = False
-        self.endOfEpisode = False #this flag indicate the end of episode
+        self.initial_state = None #initial state is a new state after reseting.
+        self.new_state = False #new state is used to indicate state arriving after action ran.
+        self.endOfEpisode = False #this flag indicate the end of episode.
+        self.halt = False
+        self.timeout = timeout
         t = Thread(target=self.cmdserver)
         t.start()
 
     def cmdserver(self):
         while True:
-            cmd = self.qin.get()
+            if self.halt:
+                sys.exit(0)
+            cmd = self.qin.get(timeout=self.timeout)
             if cmd[0] == "reset":
                 self.request_reset = True
             elif cmd[0] == "act":
@@ -124,7 +134,7 @@ class BasicAgent:
             else:
                 return step(self.action['name'], self.action['args'])
 
-        if self.initial_state is None and not info['done']:
+        if self.initial_state is None and not info['done']: #first action after reseting
             self.initial_state = info
             self.endOfEpisode = False
             self.__get_controller().handleNewEpisode(info)
@@ -132,7 +142,8 @@ class BasicAgent:
         
         if self.new_state and not info['done']:
             self.new_state = False
-            self.qout.put(info)
+            if not self.qout.full():
+                self.qout.put(info)
 
         if info['done']:
             self.new_state = False
@@ -154,9 +165,18 @@ class BasicAgent:
             control.append(stepfv('id', [self.id]))
             self.__get_controller().handleConfiguration(self.id, self.max_step, self.modelmetadata)
             return ("@".join(control))
+        if '__stop__' in a:
+            print("--*-- GAME IS CLOSED --*--")
+            print(f"This agent will kill in {self.timeout} seconds...")
+            self.qout.put("halt")
+            self.qin.put("halt")
+            sys.exit()
         if 'wait_command' in a:
             if self.request_reset:
+                self.initial_state = None
                 self.request_reset = False
+                self.endOfEpisode = False
+                self.new_state = False
                 return step("__restart__", [0])
         return stepfv('__noop__', [0])
 

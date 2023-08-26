@@ -65,6 +65,19 @@ namespace bemaker
             Time.timeScale = defaultTimeScale;
         }
 
+        void OnApplicationQuit()
+        {
+            Debug.Log("ENDINGGGGG");
+            foreach(var agent in agents)
+            {
+                RequestCommand request = new RequestCommand(3);
+                request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
+                request.SetMessage(1, "__stop__", bemaker.Brain.STR, "stop");
+                request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
+                var cmds = RequestEnvControl(agent, request);
+            }
+        }
+
         public Command[] RequestEnvControl(Agent agent, RequestCommand request)
         {
             string cmdstr = null;

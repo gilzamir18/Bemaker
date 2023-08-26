@@ -8,7 +8,7 @@ class GenericEnvironment(gym.Env):
   metadata = {'render.modes': ['human']}
   envidx = 0
   controllers = None
-  def __init__(self, controller_class=BasicGymController, rid=None, server_IP="127.0.0.1", server_port=8080, sleep=0.1, buffer_size=8192, event_callback=None):
+  def __init__(self, controller_class=BasicGymController, rid=None, server_IP="127.0.0.1", server_port=8080, sleep=0, buffer_size=8192, event_callback=None, timeout=20):
     super(GenericEnvironment, self).__init__()
     # Define action and observation space
     # They must be gym.spaces objects
@@ -32,7 +32,7 @@ class GenericEnvironment(gym.Env):
     
     if not GenericEnvironment.controllers:
       GenericEnvironment.controllers = {}
-      controllers = startasdaemon(rid, controller_classes, server_IP, server_port, buffer_size, sleep)
+      controllers = startasdaemon(rid, controller_classes, server_IP, server_port, buffer_size, sleep, timeout)
       for i in range(len(controllers)):
         GenericEnvironment.controllers[rid[i]] = controllers[i]
     
