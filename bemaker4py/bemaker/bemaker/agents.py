@@ -52,7 +52,12 @@ class BasicController:
 
     def request_reset(self, args=None):
         self.agent.qin.put(["reset"])
-        info = self.agent.qout.get(timeout=self.agent.timeout)
+        info = None
+        try:
+            info = self.agent.qout.get(timeout=self.agent.timeout)
+        except:
+            print(f"Timeout expired. When you start the controller, you have {self.agent.timeout} seconds to start the game!")
+            sys.exit(0)
         if info == "halt":
             sys.exit(0)
         self.restoreDefaultAction()
@@ -70,7 +75,12 @@ class BasicController:
         action['args'] = self.actionArgs
         action['fields'] = self.fields
         self.agent.qin.put(['act', action])
-        info = self.agent.qout.get(timeout=self.agent.timeout)
+        info = None
+        try:
+            info = self.agent.qout.get(timeout=self.agent.timeout)
+        except:
+            print(f"Timeout expired. When you start the controller, you have {self.agent.timeout} seconds to start the game!")
+            sys.exit(0)
         if info=="halt":
             sys.exit(0)
         self.restoreDefaultAction()
@@ -110,7 +120,12 @@ class BasicAgent:
         while True:
             if self.halt:
                 sys.exit(0)
-            cmd = self.qin.get(timeout=self.timeout)
+            cmd = None
+            try:
+                cmd = self.qin.get(timeout=self.timeout)
+            except:
+                print(f"Timeout expired. When you start the controller, you have {self.timeout} seconds to start the game!")
+                sys.exit(0)
             if cmd[0] == "reset":
                 self.request_reset = True
             elif cmd[0] == "act":
