@@ -2,6 +2,8 @@ from .utils import step, stepfv, steps
 import random
 import time
 import sys
+from threading import Thread
+from queue import Queue
 
 class BasicController:    
     def __init__(self):
@@ -10,52 +12,21 @@ class BasicController:
         self.actionArgs = [0, 0, 0, 0]
         self.defaultAction = "__waitnewaction__"
         self.defaultActionArgs = [0, 0, 0, 0]
-        self.lastinfo = None
-        self.waitfornextstate = 0.001
-        self.waitforinitialstate = 0.01
-        self.done = False
         self.agent = None
         self.id = 0
-        self.max_steps = 0
         self.newaction = False
-        self.nextstate = None
         self.fields = None
-        self.resetid = 0
-
-    def reset_behavior(self, info):
-        self.actionArgs = [0, 0, 0, 0]
-        return info
+        self.max_steps = 0
+        self.metadatamodel = None
 
     def close(self):
         pass #release resources here
-
-    def request_reset(self, args=None):
-        self.initialState = None
-        self.agent.reset = True
-        while self.initialState is None:
-            self.agent.request_newepisode(self.resetid, args)
-            time.sleep(self.waitforinitialstate)
-        info = self.initialState
-        self.initialState = None
-        self.resetid += 1
-        self.done = False
-        self.paused = False
-        return self.reset_behavior(info)
 
     def handleNewEpisode(self, info):
         pass
 
     def handleEndOfEpisode(self, info):
         pass
-    
-    def stop(self):
-        self.agent.request_stop()
-
-    def pause(self):
-        self.agent.request_pause()
-    
-    def resume(self):
-        self.agent.request_resume()
     
     def transform_state(self, info):
         return info
@@ -65,6 +36,10 @@ class BasicController:
         self.max_steps = max_step
         self.metadatamodel = metadatamodel
 
+    def reset_behavior(self, info):
+        self.actionArgs = [0, 0, 0, 0]
+        return info
+
     def step_behavior(self, action):
         """
         Override this method to change step behavior. Never change
@@ -72,7 +47,14 @@ class BasicController:
         """
         self.actionName = "move"
         self.actionArgs = [random.choice([0, 500]), 0, random.choice([0, 500])]
-        
+        self.fields = []
+
+    def request_reset(self, args=None):
+        self.agent.qin.put(["reset"])
+        info = self.agent.qout.get()
+        self.restoreDefaultAction()
+        return self.reset_behavior(info)
+
     def request_step(self, action):
         """
         This method change environment state under action named 'action'.
@@ -80,21 +62,19 @@ class BasicController:
         implements step_behavior method.
         """
         self.step_behavior(action)
-        self.nextstate = None
-        self.agent.newaction = True
-        while ( self.nextstate is None and self.agent.check_inepisode(self.agent.info)):
-            time.sleep(self.waitfornextstate)
-        if self.nextstate is None:
-            self.nextstate = self.agent.info
-        state = self.nextstate
-        self.nextstate = None
-        return state
+        action = {}
+        action['name'] = self.actionName
+        action['args'] = self.actionArgs
+        action['fields'] = self.fields
+        self.agent.qin.put(['act', action])
+        info = self.agent.qout.get()
+        self.restoreDefaultAction()
+        return info
 
     def restoreDefaultAction(self):
         self.actionName = "__waitnewaction__"
         self.actionArgs = [0]
         self.fields = None
-
 
 class BasicAgent:
     rl_env_control = {
@@ -102,126 +82,66 @@ class BasicAgent:
         'agent_id': 0
     }
 
-    def __init__(self):
+    def __init__(self, qin:Queue, qout:Queue, waittime:float=0.01):
         self.max_step = 0
         self.id = 0
-        self.steps = 0
         self.controller = BasicController()
-        self.newaction = False
-        self.resume = False
-        self.reset = False
-        self.resetargs = None
-        self.resetid = 0
-        self.envresetid = 0
-        self.info = None
-        self.stop = False
-      
-    def check_outofepisode(self, info):
-        return info['__ctrl_stopped__'] or info['done'] or info['__ctrl_paused__']
+        self.qin = qin
+        self.qout = qout
+        self.request_reset = False
+        self.request_action = False
+        self.waittime = waittime
+        self.action = None
+        self.initial_state = None
+        self.new_state = False
+        self.endOfEpisode = False #this flag indicate the end of episode
+        t = Thread(target=self.cmdserver)
+        t.start()
 
-    def check_inepisode(self, info):
-        return not self.check_outofepisode(info)
-        
-    def check_firststep(self, info):
-        return info['steps'] == 0
- 
-    def __step(self, actionName, actionArgs, fields, info):
-        assert info['id'] == self.id, "Error: inconsistent agent identification!"
-        if fields is None:
-            return step(actionName, actionArgs)
-        else:
-            return steps(actionName, actionArgs, fields)
-
-
-    def __stop(self): 
-        """
-        Stop agent simulation in Unity.
-        """
-        return step("__stop__")
-
-    def __resume(self):
-        """
-        Resume agent simulation in Unity.
-        """
-        return step("__resume__")
-
-    def __reset(self):
-        """
-        Restart agent simulation in Unity.
-        """
-        self.reset = False
-        if self.resetargs is None:
-            return step("__restart__", [self.resetid])
-        else:
-            args = self.resetargs
-            self.resetargs = None
-            return steps("__restart__", [self.resetid], args)
-        
-    def __pause(self):
-        """
-        Pause agent simulation in Unity.
-        """
-        return step("__pause__")
-    
-    def __resume(self):
-        """
-        Resume agent simulation in Unity.
-        """
-        return step("__resume__")
-
-    def __resetfromenv(self):
-        """
-        Restart agent simulation in Unity.
-        """
-        if self.resetargs is None:
-            cid = self.envresetid
-            self.envresetid += 1
-            return step("__restart__", [cid])
-        else:
-            args = self.resetargs
-            self.resetargs = None
-            cid = self.envresetid
-            self.envresetid += 1
-            return steps("__restart__", [cid], args)
-
-    def request_newepisode(self, resetid, cmds=None):
-        self.resetargs = cmds
-        self.resetid = resetid
-        self.reset = True
+    def cmdserver(self):
+        while True:
+            cmd = self.qin.get()
+            if cmd[0] == "reset":
+                self.request_reset = True
+            elif cmd[0] == "act":
+                self.action = cmd[1]
+                self.request_action = True
+            time.sleep(self.waittime)
 
     def act(self, info):
-        actionName = self.__get_controller().actionName
-        actionArgs = self.__get_controller().actionArgs
-        fields = self.__get_controller().fields
-        self.__get_controller().restoreDefaultAction()
-        self.info = info
-
-        if info['done'] and not info['__ctrl_stopped__']:
-            self.__get_controller().nextstate = info
-            self.__get_controller().handleEndOfEpisode(info)
-            return self.__stop()
-
-        if actionName == "__restart__" or self.reset:
-            self.reset = False
-            return self.__reset()
-        if actionName == "__stop__" or self.stop:
-            self.stop = False
-            return self.__stop()
-        if actionName == "__resume__" and info['__ctrl_paused__']:
-            self.resume = False
-            return self.__resume()
-
-        if self.check_inepisode(info):
-            if self.check_firststep(info) and self.__get_controller().initialState  is None:
-                self.__get_controller().initialState = info
-                self.__get_controller().handleNewEpisode(info)
-            if self.newaction:
-                self.__get_controller().nextstate = info
-                self.newaction = False
-                self.steps += 1
-                return self.__step(actionName, actionArgs, fields, info)
+        if self.request_reset:
+            self.initial_state = None
+            self.request_reset = False
+            self.endOfEpisode = False
+            self.new_state = False
+            return step("__restart__", [0])
+        
+        if self.request_action:
+            self.request_action = False
+            self.new_state = True
+            if "fields" in self.action:
+                return steps(self.action['name'], self.action['args'], self.action['fields'])
             else:
-                return step("__waitnewaction__", [0])
+                return step(self.action['name'], self.action['args'])
+
+        if self.initial_state is None and not info['done']:
+            self.initial_state = info
+            self.endOfEpisode = False
+            self.__get_controller().handleNewEpisode(info)
+            self.qout.put(info)
+        
+        if self.new_state and not info['done']:
+            self.new_state = False
+            self.qout.put(info)
+
+        if info['done']:
+            self.new_state = False
+            self.initial_state = None
+            if not self.endOfEpisode:
+                self.endOfEpisode = True
+                self.qout.put(info)
+                self.__get_controller().handleEndOfEpisode(info)
+
         return step("__waitnewaction__", [0])
 
     def handleEnvCtrl(self, a):
@@ -235,8 +155,9 @@ class BasicAgent:
             self.__get_controller().handleConfiguration(self.id, self.max_step, self.modelmetadata)
             return ("@".join(control))
         if 'wait_command' in a:
-            if self.reset:
-                return self.__resetfromenv()
+            if self.request_reset:
+                self.request_reset = False
+                return step("__restart__", [0])
         return stepfv('__noop__', [0])
 
     def __get_controller(self):

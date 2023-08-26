@@ -6,8 +6,9 @@ from .workers import BMWorker
 import time
 
 def startasdaemon(ids, controllers_classes=None, server_IP="127.0.0.1", server_port=8080, buffer_size=8192, waitfor=0.1):
-    agents = [BasicAgent] * len(ids) 
-    t = Thread(target=lambda:create_server(agents, ids, server_IP, server_port, buffer_size))
+    agents = [BasicAgent] * len(ids)
+    queues = []
+    t = Thread(target=lambda:create_server(agents, ids, server_IP, server_port, buffer_size, waitfor))
     t.daemon = True
     t.start()
     time.sleep(waitfor)

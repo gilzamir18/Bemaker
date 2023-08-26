@@ -53,7 +53,6 @@ class GenericEnvironment(gym.Env):
   
     self.rid =  rid
 
-
   def step(self, action):
     info = self.controller.request_step(action)
     state = self.controller.transform_state(info)

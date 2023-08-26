@@ -1,6 +1,7 @@
 import numpy as np
 from inspect import signature
 import sys
+from queue import Queue
 
 class BasicWorker:
     def proccess(self, data):
@@ -18,9 +19,9 @@ class BMWorker:
     _agents = {}
     _n_agents = 0 
 
-    def register_agent(Agent_Class, id = 0):
+    def register_agent(Agent_Class, id = 0, waittime=0.01):
         dirs = dir(Agent_Class)
-        agent = Agent_Class()
+        agent = Agent_Class(Queue(), Queue(), waittime)
         agent.id = id
         if  "act" in dirs  and  "handleEnvCtrl" in dirs:
             sig = signature(Agent_Class.act)

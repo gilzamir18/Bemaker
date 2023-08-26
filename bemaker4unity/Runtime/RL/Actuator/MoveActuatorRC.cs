@@ -103,12 +103,12 @@ namespace bemaker {
                                       );
                     }
                 }
-                move = 0;
-                turn = 0;
-                jump = 0;
-                jumpForward = 0;
-                brake = 0;
             }
+            move = 0;
+            turn = 0;
+            jump = 0;
+            jumpForward = 0;
+            brake = 0;
         }
 
         void Awake()
