@@ -5,14 +5,16 @@ from bemaker.appserver import startasdaemon
 
 class GenericEnvironment(gym.Env):
   """Custom Environment that follows gym interface"""
-  metadata = {'render.modes': ['human']}
+  metadata = {}
   envidx = 0
   controllers = None
-  def __init__(self, controller_class=BasicGymController, rid=None, server_IP="127.0.0.1", server_port=8080, sleep=0, buffer_size=8192, event_callback=None, timeout=20):
+  def __init__(self, controller_class=BasicGymController, rid=None, event_callback=None, config=None):
     super(GenericEnvironment, self).__init__()
     # Define action and observation space
     # They must be gym.spaces objects
     # Example when using discrete actions:
+    if config is None:
+      config = {'server_IP': "127.0.0.1", 'server_port': 8080, 'waittime':0.0, 'buffer_size': 81920}
     self.render_mode = 'human'
     if rid is None:
       rid = ["0"]
@@ -32,7 +34,7 @@ class GenericEnvironment(gym.Env):
     
     if not GenericEnvironment.controllers:
       GenericEnvironment.controllers = {}
-      controllers = startasdaemon(rid, controller_classes, server_IP, server_port, buffer_size, sleep, timeout)
+      controllers = startasdaemon(rid, controller_classes, config)
       for i in range(len(controllers)):
         GenericEnvironment.controllers[rid[i]] = controllers[i]
     

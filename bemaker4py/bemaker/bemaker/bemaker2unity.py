@@ -1,7 +1,7 @@
 import sys
 import socketserver
 from .workers import BMWorker
-import socket
+from .utils import get_int_from, get_bool_from, get_float_from, get_from
 
 class BMUDPHandler(socketserver.DatagramRequestHandler):
     worker = BMWorker()
@@ -16,16 +16,17 @@ class BMUDPHandler(socketserver.DatagramRequestHandler):
             print("WARNING: returning empty message!")
             self.wfile.write("".encode(encoding="utf-8"))
 
-def create_server(agents, ids, server_IP="127.0.0.1", server_port=8080, buffer_size=8192, waittime=0, timeout=20):
+def create_server(agents, ids, config=None):
+    if config is None:
+        config = {}
     for i in range(len(agents)):
-        if not BMWorker.register_agent(agents[i], ids[i], waittime, timeout):
+        if not BMWorker.register_agent(agents[i], ids[i], config):
             sys.exit(-1)
 
-    serverAddress   = (server_IP, server_port)
+    serverAddress   = (get_from(config, 'server_IP', '127.0.0.1'), get_int_from(config, 'server_port', 8080))
     serverUDP = socketserver.UDPServer(serverAddress, BMUDPHandler)
-    serverUDP.max_packet_size = buffer_size
-    serverUDP.timeout = timeout
-    serverUDP.handle_timeout = lambda : print(".......................TIMEOUT.......................")
+    serverUDP.max_packet_size = get_int_from(config, 'buffer_size', 8192)
+    serverUDP.timeout = get_float_from(config, 'timeout', 20)
     serverUDP.serve_forever()
 
 if __name__ == "__main__":

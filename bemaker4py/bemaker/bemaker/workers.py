@@ -2,6 +2,7 @@ import numpy as np
 from inspect import signature
 import sys
 from queue import Queue
+from .utils import get_float_from, get_int_from
 
 class BasicWorker:
     def proccess(self, data):
@@ -19,9 +20,12 @@ class BMWorker:
     _agents = {}
     _n_agents = 0 
 
-    def register_agent(Agent_Class, id = 0, waittime=0, timeout=20):
+    def register_agent(Agent_Class, id = 0, config=None):
+        if config is None:
+            config = {}
         dirs = dir(Agent_Class)
-        agent = Agent_Class(Queue(), Queue(), waittime, timeout)
+        action_buffersize = get_int_from(config, 'action_buffersize', 0)
+        agent = Agent_Class(Queue(action_buffersize), Queue(action_buffersize), get_float_from(config, 'waittime', 0), get_float_from(config, 'timeout', 20))
         agent.id = id
         if  "act" in dirs  and  "handleEnvCtrl" in dirs:
             sig = signature(Agent_Class.act)
