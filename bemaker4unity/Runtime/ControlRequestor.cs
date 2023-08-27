@@ -42,6 +42,7 @@ namespace bemaker
         public bool physicsMode = true;
         public int skipFrame = 8;
         public bool repeatAction = false;
+        public bool stopOnQuit = false;
         public List<Agent> agents;
 
         void Awake()
@@ -67,13 +68,16 @@ namespace bemaker
 
         void OnApplicationQuit()
         {
-            foreach(var agent in agents)
+            if (stopOnQuit)
             {
-                RequestCommand request = new RequestCommand(3);
-                request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
-                request.SetMessage(1, "__stop__", bemaker.Brain.STR, "stop");
-                request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
-                var cmds = RequestEnvControl(agent, request);
+                foreach(var agent in agents)
+                {
+                    RequestCommand request = new RequestCommand(3);
+                    request.SetMessage(0, "__target__", bemaker.Brain.STR, "envcontrol");
+                    request.SetMessage(1, "__stop__", bemaker.Brain.STR, "stop");
+                    request.SetMessage(2, "id", bemaker.Brain.STR, agent.ID);
+                    var cmds = RequestEnvControl(agent, request);
+                }
             }
         }
 
