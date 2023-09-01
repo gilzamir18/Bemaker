@@ -13,10 +13,19 @@ namespace bemaker
         public float rotationMin = 0;
         public float rotationMax = 0;
         
+        public bool configureAfterReset = false;
+
         public override void OnSetup(Agent agent)
         {
             this.agent = (BasicAgent) agent;
-            this.agent.beginOfEpisodeEvent += HandleBeginOfEpisode;
+            if (configureAfterReset)
+            {
+                this.agent.beginOfEpisodeEvent += HandleBeginOfEpisode;
+            }
+            else
+            {
+                this.agent.beforeTheResetEvent += HandleBeginOfEpisode;
+            }
             this.agent.endOfEpisodeEvent += HandleEndOfEpisode;
         }
 
