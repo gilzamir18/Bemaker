@@ -89,6 +89,7 @@ class BasicController:
         except KeyboardInterrupt:
             sys.exit(0)
         except Empty as e:
+            print("Empty message in request step.")
             info = self.agent.last_info
     
         if info=="halt":
@@ -123,7 +124,7 @@ class BasicAgent:
         self.endOfEpisode = False #this flag indicate the end of episode.
         self.halt = False
         self.timeout = timeout
-        self.last_info
+        self.last_info = None
         t = Thread(target=self.cmdserver)
         t.start()
 
