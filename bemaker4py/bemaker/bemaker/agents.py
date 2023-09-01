@@ -3,7 +3,7 @@ import random
 import time
 import sys
 from threading import Thread
-from queue import Queue
+from queue import Empty, Queue
 
 class BasicController:    
     def __init__(self):
@@ -88,6 +88,8 @@ class BasicController:
             print(f"Step loss after {self.agent.timeout} seconds!")
         except KeyboardInterrupt:
             sys.exit(0)
+        except Empty as e:
+            info = self.agent.last_info
     
         if info=="halt":
             sys.exit(0)
@@ -121,6 +123,7 @@ class BasicAgent:
         self.endOfEpisode = False #this flag indicate the end of episode.
         self.halt = False
         self.timeout = timeout
+        self.last_info
         t = Thread(target=self.cmdserver)
         t.start()
 
@@ -144,6 +147,8 @@ class BasicAgent:
                 sys.exit(0)
 
     def act(self, info):
+        self.last_info = info
+
         if self.request_reset:
             self.initial_state = None
             self.request_reset = False
@@ -179,7 +184,7 @@ class BasicAgent:
                 self.endOfEpisode = True
                 self.qout.put(info)
                 self.__get_controller().handleEndOfEpisode(info)
-
+        
         return step("__waitnewaction__", [0])
 
     def handleEnvCtrl(self, a):
