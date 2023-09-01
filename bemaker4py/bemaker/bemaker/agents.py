@@ -53,11 +53,17 @@ class BasicController:
     def request_reset(self, args=None):
         self.agent.qin.put(["reset"])
         info = None
-        try:
-            info = self.agent.qout.get(timeout=self.agent.timeout)
-        except:
-            print(f"Timeout expired. When you start the controller, you have {self.agent.timeout} seconds to start the game!")
-            sys.exit(0)
+        tryreset = True
+        while tryreset:
+            try:
+                info = self.agent.qout.get(timeout=self.agent.timeout)
+                tryreset = False
+            except TimeoutError as e:
+                print(f"Trying reset again after {self.agent.timeout} seconds!")
+                tryreset = True
+            except KeyboardInterrupt as e:
+                sys.exit(0)
+    
         if info == "halt":
             sys.exit(0)
         self.restoreDefaultAction()
@@ -78,9 +84,11 @@ class BasicController:
         info = None
         try:
             info = self.agent.qout.get(timeout=self.agent.timeout)
-        except:
-            print(f"Timeout expired. When you start the controller, you have {self.agent.timeout} seconds to start the game!")
+        except TimeoutError as e:
+            print(f"Step loss after {self.agent.timeout} seconds!")
+        except KeyboardInterrupt:
             sys.exit(0)
+    
         if info=="halt":
             sys.exit(0)
         self.restoreDefaultAction()
@@ -118,20 +126,22 @@ class BasicAgent:
 
     def cmdserver(self):
         while True:
-            if self.halt:
-                sys.exit(0)
-            cmd = None
             try:
-                cmd = self.qin.get(timeout=self.timeout)
-            except:
-                print(f"Timeout expired. When you start the controller, you have {self.timeout} seconds to start the game!")
+                if self.halt:
+                    sys.exit(0)
+                cmd = None
+                cmd = self.qin.get()
+                if cmd[0] == "reset":
+                    self.request_reset = True
+                    with self.qin.mutex:
+                        self.qin.queue.clear()
+                elif cmd[0] == "act":
+                    self.action = cmd[1]
+                    self.request_action = True
+
+                time.sleep(self.waittime)
+            except KeyboardInterrupt as e:
                 sys.exit(0)
-            if cmd[0] == "reset":
-                self.request_reset = True
-            elif cmd[0] == "act":
-                self.action = cmd[1]
-                self.request_action = True
-            time.sleep(self.waittime)
 
     def act(self, info):
         if self.request_reset:
@@ -152,6 +162,8 @@ class BasicAgent:
         if self.initial_state is None and not info['done']: #first action after reseting
             self.initial_state = info
             self.endOfEpisode = False
+            with self.qout.mutex:
+                self.qout.queue.clear()
             self.__get_controller().handleNewEpisode(info)
             self.qout.put(info)
         
