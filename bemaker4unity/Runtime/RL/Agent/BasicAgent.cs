@@ -182,6 +182,7 @@ namespace bemaker
 
         public void BMInitialize()
         {
+            numberOfSensors = 0;
             if (body == null)
             {
                 body = gameObject;
