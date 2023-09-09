@@ -242,7 +242,7 @@ namespace bemaker
 
         public void SetName(string name)
         {
-            this.name = name;
+            this.perceptionKey = name;
         }
 
         public bool IsInput()
@@ -341,7 +341,7 @@ namespace bemaker
 
         public string GetName()
         {
-            return name;
+            return perceptionKey;
         }
 
         public string GetKey()
