@@ -1,7 +1,6 @@
 from .utils import stepfv
 from .bemaker2unity import create_server
 from .agents import BasicController
-import gym
 import numpy as np
 import sys
 import json
