@@ -28,6 +28,8 @@ class OnnxableSACPolicy(th.nn.Module):
 
 def sac_export_to(path="model", modelname="model.onnx", metadatamodel= None, device="cpu"):
     # Example: model = SAC("MlpPolicy", "Pendulum-v1")
+    if metadatamodel is None:
+        metadatamodel = {"inputs":[{'name':'input'}], "outputs": []}
 
     model = SAC.load(path, device=device)
 

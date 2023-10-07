@@ -56,11 +56,14 @@ class BasicController:
         tryreset = True
         while tryreset:
             try:
-                info = self.agent.qout.get(timeout=self.agent.timeout)
+                info = self.agent.qout.get()
                 tryreset = False
             except TimeoutError as e:
                 print(f"Trying reset again after {self.agent.timeout} seconds!")
                 tryreset = True
+            except Empty as e:
+               print("Empty message in reset. Trying reset again...")
+               tryreset = True
             except KeyboardInterrupt as e:
                 sys.exit(0)
     
@@ -85,7 +88,7 @@ class BasicController:
         try:
             info = self.agent.qout.get(timeout=self.agent.timeout)
         except TimeoutError as e:
-            print(f"Step loss after {self.agent.timeout} seconds!")
+            print(f"Step timeout after {self.agent.timeout} seconds!")
         except KeyboardInterrupt:
             sys.exit(0)
         except Empty as e:

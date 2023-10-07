@@ -182,6 +182,7 @@ namespace bemaker
 
         public void BMInitialize()
         {
+            numberOfSensors = 0;
             if (body == null)
             {
                 body = gameObject;
@@ -232,9 +233,12 @@ namespace bemaker
                 truncatedSensor.SetAgent(this);
                 sensorList.Add(truncatedSensor);
                 sensorsMap[truncatedSensor.GetKey()] = truncatedSensor;
+                numberOfSensors = 5;
             }
-
-            numberOfSensors = 5;
+            else
+            {
+                numberOfSensors = 4;
+            }
 
             for (int i = 0; i < transform.childCount; i++) 
             {
