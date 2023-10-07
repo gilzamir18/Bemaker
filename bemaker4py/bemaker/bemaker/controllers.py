@@ -6,6 +6,7 @@ import sys
 import json
 from .types import *
 import base64
+import gymnasium as gym
 #from PIL import Image
 
 codetypes = {0: np.float32, 1: np.uint8, 2: np.uint8, 3: np.uint8, 4: np.uint8, 5: np.float32, 6: np.uint8}
@@ -164,7 +165,7 @@ class BasicGymController(BasicController):
         else:
             return self.input_extractor(self.inputs, info)
 
-    def get_state(self, info):
+    def transform_state(self, info):
         """
         This method transform bemaker data structure to a
         shape supported by OpenGym based environments.

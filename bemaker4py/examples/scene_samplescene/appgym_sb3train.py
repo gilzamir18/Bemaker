@@ -1,7 +1,7 @@
 import bemaker
 from bemaker.controllers import BasicGymController
 import BMEnv
-import gym
+import gymnasium as gym
 import numpy as np
 from stable_baselines3 import SAC
 from stable_baselines3.sac import MultiInputPolicy
