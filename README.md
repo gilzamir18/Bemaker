@@ -5,6 +5,7 @@ BeMaker provides an agent abstraction for modeling Non-Player Characters (NPCs).
 
 In the Unity architecture, we map agent components to prefabs or Unity scripts. These components are stored as game objects, which are game components that perform behaviors.
 
+> Godot is supported through the [AI4U](https://github.com/gilzamir18/AI4U) framework. 
 
 # Setup
 
