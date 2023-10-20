@@ -16,7 +16,7 @@ BeMaker has two components: the Unity side and the Python side. These components
 
 The Unity component can be installed using the BeMaker package available through the Unity Package Manager. To do this, create a new 3D project in Unity and select “Package Manager” from the Window menu. In the Package Manager window, click on the “Add package from disk” option and then click “Install” to use BeMaker in your project.
 
-The Python component of BeMaker can be installed using a local pip package. To install it, navigate to the bemaker4py directory and run the appropriate command:
+The Python component of BeMaker can be installed using a local pip package. To install it, navigate to the bemaker4py/bemaker directory and run the appropriate command:
 
 ```
     pip install -e . 
